@@ -46,8 +46,7 @@ public class Reader
     /**
      * Read the specified block address from the tag
      *
-     * @param blockAddress Address of the block to read (from 0 to 254
-     *                     )
+     * @param blockAddress Address of the block to read (from 0 to 254)
      * @throws IOException
      * @throws java.lang.IndexOutOfBoundsException
      * @throws java.nio.channels.NotYetConnectedException
