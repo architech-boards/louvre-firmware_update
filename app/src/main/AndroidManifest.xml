@@ -27,10 +27,6 @@
                 android:name="android.nfc.action.TECH_DISCOVERED"
                 android:resource="@xml/filter_nfc" />
         </activity>
-        <activity
-            android:name=".MyActivity"
-            android:label="@string/title_activity_my" >
-        </activity>
     </application>
 
 </manifest>

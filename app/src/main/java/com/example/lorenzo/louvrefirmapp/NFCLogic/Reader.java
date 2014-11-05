@@ -4,16 +4,22 @@ import android.nfc.Tag;
 import android.nfc.tech.NfcA;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.channels.NotYetConnectedException;
 
 /**
  * Created by Lorenzo on 31/10/2014.
  */
-public class Reader
+public class Reader implements Serializable
 {
     NfcA nfcA;
     byte[] command;
     byte[] answer;
+
+    public byte[] getAnswer()
+    {
+        return answer;
+    }
 
     /**
      * Create an instance of Reader object used to handle read and write operation on the specified
@@ -34,6 +40,24 @@ public class Reader
         try
         {
             this.nfcA.connect();
+            return true;
+        }
+        catch (IOException ioExc)
+        {
+            return false;
+        }
+    }
+
+
+    /**
+     * Close the connection to the tag disabling all I/O operations and releasing resources
+     * @return True if disconnected, otherwise false
+     */
+    public boolean disconnect()
+    {
+        try
+        {
+            this.nfcA.close();
             return true;
         }
         catch (IOException ioExc)

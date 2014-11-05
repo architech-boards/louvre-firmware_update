@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.nfc.Tag;
 import android.nfc.tech.NfcA;
 import android.os.Build;
@@ -25,17 +26,29 @@ import android.support.v4.widget.DrawerLayout;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.nfc.NfcAdapter;
+import android.widget.Toast;
+
+import com.example.lorenzo.louvrefirmapp.NFCLogic.Reader;
 
 import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-//TODO terminare implementazione foreground dispatcher seguendo anche il link (http://stackoverflow.com/questions/5949893/android-nfc-foreground-dispatch-problem)
-//TODO implementare metodo pulsante "scan tag"
+//TODO sistemare codice pulendo commmenti e eliminando riferimenti non utilizzati
 
 public class MainActivity extends Activity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks,
+        TagInfoFragment.OnTagInfoFragmentInterListener
+{
+
+
+    transient Reader ntagReader;
+
+    public Reader getNtagReader()
+    {
+        return ntagReader;
+    }
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -91,59 +104,111 @@ public class MainActivity extends Activity
         // Check if the application is started because a NTAG was scanned
         if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(getIntent().getAction()))
         {
-            Tag tag = getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
+            Tag discoveredTag = getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
 
-            for(String s : tag.getTechList())
-            {
-                Log.d("onResume", s);
-            }
-
-            // Try to send some data to the NTAG
-            NfcA nfca = NfcA.get(tag);
-
-            byte[] dataToWrite = new byte[1];
-            dataToWrite[0] = (byte)0x60;
-
-            try
-            {
-                nfca.connect();
-
-                if(nfca.isConnected())
-                {
-                    byte[] answer = nfca.transceive(dataToWrite);
-                    String answerString = new String(answer, "UTF-8");
-
-
-                }
-            }
-            catch (IOException ioexc)
-            {
-                Log.e("onResume", ioexc.toString());
-            }
-
+            this.ntagReader = new Reader(discoveredTag);
         }
+    }
+
+
+    /**
+     * Called when activity is in foreground and a NTAG is scanned due to foreground dispatch
+     * implementation
+     *
+     * @param intent
+     */
+    @Override
+    public void onNewIntent(Intent intent){
+
+        // Fetch the tag from the intent
+        Tag discoveredTag = (Tag)intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+
+        this.ntagReader = new Reader(discoveredTag);
     }
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
-                .commit();
+
+        switch(position)
+        {
+            case 0:
+            {
+                fragmentManager.beginTransaction()
+                        .replace(R.id.container, TagInfoFragment.newInstance())
+                        .commit();
+                break;
+            }
+        }
+
     }
+
+
+    /**
+     * Handler or click of scan tag button
+     *
+     * @param buttonClicked Clicked button
+     */
+    public void onScanTagClick(View buttonClicked)
+    {
+        String errorNoTag =         "No tag scanned";
+        String errorConnect =       "Failed to connect to the tag";
+        String errorRead =          "Failed to read the tag";
+        String errorDisconnect =    "Failed to disconnect from the tag";
+
+        // Check if a tag was scanned
+        if(this.ntagReader == null)
+        {
+            Toast.makeText(getApplicationContext(), errorNoTag,
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        TextView tagInfo = (TextView)findViewById(R.id.lb_info_text);
+
+        // Try to open a connection to the tag
+        if(!this.ntagReader.connect())
+        {
+            Toast.makeText(getApplicationContext(), errorConnect,
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Communicate with the tag and close the communication at the end
+        try
+        {
+            this.ntagReader.read((byte) 0x00);
+            String answerString = new String(this.ntagReader.getAnswer());
+            tagInfo.setText(answerString);
+        }
+        catch (IOException ioexc)
+        {
+            Toast.makeText(getApplicationContext(), errorRead,
+                    Toast.LENGTH_SHORT).show();
+        }
+
+        if(!this.ntagReader.disconnect())
+        {
+            Toast.makeText(getApplicationContext(), errorDisconnect,
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
 
     public void onSectionAttached(int number) {
         switch (number) {
             case 1:
-                mTitle = getString(R.string.title_section1);
+            {
+                mTitle = getString(R.string.title_get_tag_info);
                 break;
+            }
             case 2:
-                mTitle = getString(R.string.title_section2);
+            {
+                mTitle = getString(R.string.title_upload_firmware);
                 break;
-            case 3:
-                mTitle = getString(R.string.title_section3);
-                break;
+            }
         }
     }
 
@@ -180,44 +245,51 @@ public class MainActivity extends Activity
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
-        }
-
-        @Override
-        public void onAttach(Activity activity) {
-            super.onAttach(activity);
-            ((MainActivity) activity).onSectionAttached(
-                    getArguments().getInt(ARG_SECTION_NUMBER));
-        }
+    @Override
+    public void onFragmentInteraction(Uri uri)
+    {
+        Log.d("onFragmentInteraction callback", "callback called in main Activity");
     }
+
+
+//    /**
+//     * A placeholder fragment containing a simple view.
+//     */
+//    public static class PlaceholderFragment extends Fragment {
+//        /**
+//         * The fragment argument representing the section number for this
+//         * fragment.
+//         */
+//        private static final String ARG_SECTION_NUMBER = "section_number";
+//
+//        /**
+//         * Returns a new instance of this fragment for the given section
+//         * number.
+//         */
+//        public static PlaceholderFragment newInstance(int sectionNumber) {
+//            PlaceholderFragment fragment = new PlaceholderFragment();
+//            Bundle args = new Bundle();
+//            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+//            fragment.setArguments(args);
+//            return fragment;
+//        }
+//
+//        public PlaceholderFragment() {
+//        }
+//
+//        @Override
+//        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+//                                 Bundle savedInstanceState) {
+//            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+//            return rootView;
+//        }
+//
+//        @Override
+//        public void onAttach(Activity activity) {
+//            super.onAttach(activity);
+//            ((MainActivity) activity).onSectionAttached(
+//                    getArguments().getInt(ARG_SECTION_NUMBER));
+//        }
+//    }
 
 }

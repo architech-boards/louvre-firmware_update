@@ -15,25 +15,6 @@ both width and height to consume the full space available. -->
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <Button
-            android:id="@string/button_scan_tag"
-            android:text="@string/button_scan_tag"
-            android:onClick="onScanTagClick"
-            android:layout_gravity="center_horizontal|bottom"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <TableLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:text="prova"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-            </TableLayout>
-
     </FrameLayout>
 
     <!-- android:layout_gravity="start" tells DrawerLayout to treat

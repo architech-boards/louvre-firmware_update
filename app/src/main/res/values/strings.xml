@@ -2,14 +2,14 @@
 <resources>
 
     <string name="app_name">LouvreFirmApp</string>
-    <string name="title_section1">Section 1</string>
-    <string name="title_section2">Section 2</string>
-    <string name="title_section3">Section 3</string>
+    <string name="title_get_tag_info">Retrieve TAG Info</string>
+    <string name="title_upload_firmware">Upload Firmware</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
-    <string name="button_scan_tag">Scan NTAG</string>
-    <string name="title_activity_my">MyActivity</string>
+    <string name="button_scan_tag_text"><b>Scan NTAG</b></string>
+    <string name="lb_tag_info">Scanned TAG info</string>
+    <string name="lb_tag_info_text">-</string>
 
 </resources>
