@@ -21,6 +21,16 @@ public class Reader implements Serializable
         return answer;
     }
 
+    public String getAnswerString()
+    {
+        String res = "";
+        for(byte b:this.answer)
+        {
+            res += String.format("0x%02X", b);
+        }
+        return res;
+    }
+
     /**
      * Create an instance of Reader object used to handle read and write operation on the specified
      * tag
@@ -70,17 +80,19 @@ public class Reader implements Serializable
     /**
      * Read the specified block address from the tag
      *
-     * @param blockAddress Address of the block to read (from 0 to 254)
+     * @param blockAddress Address of the block to read (from 0 - FE)
+     *
      * @throws IOException
      * @throws java.lang.IndexOutOfBoundsException
      * @throws java.nio.channels.NotYetConnectedException
      */
-    public byte[] read(byte blockAddress) throws IOException
+    public byte[] read(byte blockAddress) throws IOException//TODO controllare se validazione OK
     {
-        if(blockAddress < 0 || blockAddress > 254)
+        String errorBlockRange = "Specified block address is out of range. Valid range is 0 - FE";
+
+        if(blockAddress < Byte.MIN_VALUE || blockAddress > Byte.MAX_VALUE)
         {
-            throw new IndexOutOfBoundsException("Block address specified is out of range." +
-                                                "Valid range is from 0 to 254");
+            throw new IndexOutOfBoundsException(errorBlockRange);
         }
 
         if(this.nfcA.isConnected())

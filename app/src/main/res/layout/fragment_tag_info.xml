@@ -26,10 +26,17 @@
         android:id="@+id/button_scan_tag"
         android:text="@string/button_scan_tag_text"
         android:textSize="20dp"
-        android:onClick="onScanTagClick"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"/>
+
+    <NumberPicker
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/numberPicker"
+        android:layout_below="@+id/button_scan_tag"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="81dp"/>
 
 </RelativeLayout>

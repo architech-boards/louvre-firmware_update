@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,6 +17,7 @@ import com.example.lorenzo.louvrefirmapp.NFCLogic.Reader;
 
 import java.io.IOException;
 
+//TODO creare logica per inserire address block da prelevare -> pulsante scan tag diventa scan address block specificato
 
 /**
  * A simple {@link Fragment} subclass.
@@ -63,22 +65,29 @@ public class TagInfoFragment extends Fragment implements View.OnClickListener
         // Inflate the layout for this fragment
         View viewInflated = inflater.inflate(R.layout.fragment_tag_info, container, false);
 
+        // Set up address block picker
+        NumberPicker np = (NumberPicker)viewInflated.findViewById(R.id.numberPicker);
+        np.setMinValue(0);
+        np.setMaxValue(254);
+
         // Set click listeners inside the fragment
-        /*
         Button scanButton = (Button) viewInflated.findViewById(R.id.button_scan_tag);
         scanButton.setOnClickListener(this);
-        */
 
         return viewInflated;
     }
 
-
+    /*
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (onTagInfoFragmentInterListener != null) {
-            onTagInfoFragmentInterListener.onFragmentInteraction(uri);
+
+            NumberPicker np = (NumberPicker)getActivity().findViewById(R.id.numberPicker);
+            onTagInfoFragmentInterListener.onScanTagClick(np.getValue());
         }
     }
+    */
+
 
     @Override
     public void onAttach(Activity activity) {
@@ -101,22 +110,24 @@ public class TagInfoFragment extends Fragment implements View.OnClickListener
 
     /**
      * Handler of view click event inside the fragment (workaround to avoid having onClick logic
-     * inside the main activity)
+     * only inside the main activity)
      * @param v
      */
     @Override
     public void onClick(View v)
     {
-        /*
         switch(v.getId())
         {
             case R.id.button_scan_tag:
             {
-                onScanTagClick(v);
+                if (onTagInfoFragmentInterListener != null) {
+
+                    NumberPicker np = (NumberPicker)getActivity().findViewById(R.id.numberPicker);
+                    onTagInfoFragmentInterListener.onScanTagClick(np.getValue());
+                }
                 break;
             }
         }
-        */
     }
 
     /**
@@ -131,7 +142,7 @@ public class TagInfoFragment extends Fragment implements View.OnClickListener
      */
     public interface OnTagInfoFragmentInterListener
     {
-        public void onFragmentInteraction(Uri uri);
+        public void onScanTagClick(int addressBlock);
     }
 
 }

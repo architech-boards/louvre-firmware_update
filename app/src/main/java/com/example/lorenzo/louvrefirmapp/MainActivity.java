@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.ArrayAdapter;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.nfc.NfcAdapter;
 import android.widget.Toast;
@@ -34,6 +35,7 @@ import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.spi.CharsetProvider;
 
 //TODO sistemare codice pulendo commmenti e eliminando riferimenti non utilizzati
 
@@ -66,7 +68,8 @@ public class MainActivity extends Activity
     private String[][]      mTechLists;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -79,18 +82,12 @@ public class MainActivity extends Activity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-
-
+        // Set up foreground dispatcher to use to handle scanned tag with app in foreground
         mAdapter = NfcAdapter.getDefaultAdapter(this);
         mPendingIntent = PendingIntent.getActivity(
                 this, 0, new Intent(this, ((Object) this).getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-
         IntentFilter ntech = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
-
-        mFilters = new IntentFilter[] {
-                ntech,
-        };
-
+        mFilters = new IntentFilter[] {ntech};
         mTechLists = new String[][] { new String[] { NfcA.class.getName() } };
     }
 
@@ -148,14 +145,15 @@ public class MainActivity extends Activity
     /**
      * Handler or click of scan tag button
      *
-     * @param buttonClicked Clicked button
+     * @param addressBlock Address block to read
      */
-    public void onScanTagClick(View buttonClicked)
+    public void readSpecifiedAddressBlock(int addressBlock)
     {
         String errorNoTag =         "No tag scanned";
         String errorConnect =       "Failed to connect to the tag";
         String errorRead =          "Failed to read the tag";
         String errorDisconnect =    "Failed to disconnect from the tag";
+        String errorAddress =       "Address block is out of range";
 
         // Check if a tag was scanned
         if(this.ntagReader == null)
@@ -178,13 +176,18 @@ public class MainActivity extends Activity
         // Communicate with the tag and close the communication at the end
         try
         {
-            this.ntagReader.read((byte) 0x00);
-            String answerString = new String(this.ntagReader.getAnswer());
+            this.ntagReader.read((byte)0xFE);
+            String answerString = this.ntagReader.getAnswerString();
             tagInfo.setText(answerString);
         }
         catch (IOException ioexc)
         {
             Toast.makeText(getApplicationContext(), errorRead,
+                    Toast.LENGTH_SHORT).show();
+        }
+        catch(IndexOutOfBoundsException iobexc)
+        {
+            Toast.makeText(getApplicationContext(), errorAddress + " " + addressBlock,
                     Toast.LENGTH_SHORT).show();
         }
 
@@ -245,10 +248,11 @@ public class MainActivity extends Activity
         return super.onOptionsItemSelected(item);
     }
 
+
     @Override
-    public void onFragmentInteraction(Uri uri)
+    public void onScanTagClick(int addressBlock)
     {
-        Log.d("onFragmentInteraction callback", "callback called in main Activity");
+        readSpecifiedAddressBlock(addressBlock);
     }
 
 
