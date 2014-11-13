@@ -3,39 +3,25 @@ package com.example.lorenzo.louvrefirmapp;
 import android.app.Activity;
 
 import android.app.ActionBar;
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.nfc.Tag;
 import android.nfc.tech.NfcA;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
-import android.widget.ArrayAdapter;
-import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.nfc.NfcAdapter;
 import android.widget.Toast;
 
+import com.example.lorenzo.louvrefirmapp.NFCLogic.Masks;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Reader;
-
-import org.apache.http.util.ByteArrayBuffer;
+import com.example.lorenzo.louvrefirmapp.NFCLogic.ReaderNotConnectedException;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.spi.CharsetProvider;
 
 //TODO sistemare codice pulendo commmenti e eliminando riferimenti non utilizzati
 
@@ -154,6 +140,7 @@ public class MainActivity extends Activity
         String errorRead =          "Failed to read the tag";
         String errorDisconnect =    "Failed to disconnect from the tag";
         String errorAddress =       "Address block is out of range";
+        String notConnected =       "Reader not connected";
 
         // Check if a tag was scanned
         if(this.ntagReader == null)
@@ -176,9 +163,19 @@ public class MainActivity extends Activity
         // Communicate with the tag and close the communication at the end
         try
         {
-            this.ntagReader.read((byte)0xFE);
-            String answerString = this.ntagReader.getAnswerString();
-            tagInfo.setText(answerString);
+            byte RF_LOCKED = this.ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.RF_LOCKED);
+            byte I2C_LOCKED = this.ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.I2C_LOCKED);
+            byte RF_FIELD_PRESENT = this.ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.RF_FIELD_PRESENT);
+            byte SRAM_RF_READY = this.ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.SRAM_RF_READY);
+            byte SRAM_I2C_READY = this.ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.SRAM_I2C_READY);
+            byte PTHRU_ON_OFF = this.ntagReader.get_NC_REG_sessfield(Masks.NC_REG_Sess.PTHRU_ON_OFF);
+
+            tagInfo.setText(" RF_LOCKED=" + Byte.toString(RF_LOCKED) + "\n" +
+                            " I2C_LOCKED=" + Byte.toString(I2C_LOCKED) + "\n" +
+                            " RF_FIELD_PRESENT=" + Byte.toString(RF_FIELD_PRESENT) + "\n" +
+                            " SRAM_RF_READY=" + Byte.toString(SRAM_RF_READY) + "\n" +
+                            " SRAM_I2C_READY=" + Byte.toString(SRAM_I2C_READY) + "\n" +
+                            " PTHRU_ON_OFF=" + Byte.toString(PTHRU_ON_OFF));
         }
         catch (IOException ioexc)
         {
@@ -190,10 +187,15 @@ public class MainActivity extends Activity
             Toast.makeText(getApplicationContext(), errorAddress + " " + addressBlock,
                     Toast.LENGTH_SHORT).show();
         }
+        catch (ReaderNotConnectedException rncexc)
+        {
+            Toast.makeText(getApplicationContext(), errorAddress + " " + addressBlock,
+                    Toast.LENGTH_SHORT).show();
+        }
 
         if(!this.ntagReader.disconnect())
         {
-            Toast.makeText(getApplicationContext(), errorDisconnect,
+            Toast.makeText(getApplicationContext(), notConnected,
                     Toast.LENGTH_SHORT).show();
         }
     }

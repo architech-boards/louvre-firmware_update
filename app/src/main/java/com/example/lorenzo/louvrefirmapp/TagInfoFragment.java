@@ -65,11 +65,6 @@ public class TagInfoFragment extends Fragment implements View.OnClickListener
         // Inflate the layout for this fragment
         View viewInflated = inflater.inflate(R.layout.fragment_tag_info, container, false);
 
-        // Set up address block picker
-        NumberPicker np = (NumberPicker)viewInflated.findViewById(R.id.numberPicker);
-        np.setMinValue(0);
-        np.setMaxValue(254);
-
         // Set click listeners inside the fragment
         Button scanButton = (Button) viewInflated.findViewById(R.id.button_scan_tag);
         scanButton.setOnClickListener(this);
@@ -120,10 +115,9 @@ public class TagInfoFragment extends Fragment implements View.OnClickListener
         {
             case R.id.button_scan_tag:
             {
-                if (onTagInfoFragmentInterListener != null) {
-
-                    NumberPicker np = (NumberPicker)getActivity().findViewById(R.id.numberPicker);
-                    onTagInfoFragmentInterListener.onScanTagClick(np.getValue());
+                if (onTagInfoFragmentInterListener != null)
+                {
+                    onTagInfoFragmentInterListener.onScanTagClick(0);//TODO eliminato number pecker
                 }
                 break;
             }
