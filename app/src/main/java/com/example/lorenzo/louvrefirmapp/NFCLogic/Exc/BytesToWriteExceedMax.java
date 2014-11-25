@@ -1,4 +1,4 @@
-package com.example.lorenzo.louvrefirmapp.NFCLogic;
+package com.example.lorenzo.louvrefirmapp.NFCLogic.Exc;
 
 /**
  * Created by Lorenzo on 10/11/2014.

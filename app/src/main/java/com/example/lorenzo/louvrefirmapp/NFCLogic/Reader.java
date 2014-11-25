@@ -4,9 +4,10 @@ import android.nfc.FormatException;
 import android.nfc.Tag;
 import android.nfc.tech.NfcA;
 
+import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.BytesToWriteExceedMax;
+import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.ReaderNotConnectedException;
+
 import java.io.IOException;
-import java.io.Serializable;
-import java.nio.channels.NotYetConnectedException;
 
 /**
  * Created by Lorenzo on 31/10/2014.
@@ -96,7 +97,7 @@ public class Reader
      * Reader transceive function with check of connection status
      * @param bytes bytes to send
      * @return bytes received in response of the sent bytes
-     * @throws ReaderNotConnectedException
+     * @throws com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.ReaderNotConnectedException
      * @throws IOException
      */
     private byte[] transceive(byte[] bytes) throws ReaderNotConnectedException, IOException
@@ -115,7 +116,7 @@ public class Reader
      * @param blockAddress Address of the block to read (from 0 - FE)
      * @return 4 memory page of 16 byte each if no error occurred
      * @throws IOException
-     * @throws com.example.lorenzo.louvrefirmapp.NFCLogic.ReaderNotConnectedException
+     * @throws com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.ReaderNotConnectedException
      */
     public byte[] read(byte blockAddress) throws IOException, ReaderNotConnectedException
     {
@@ -137,7 +138,7 @@ public class Reader
      * @param bytes bytes to write
      * @param blockAddress address of the block where writing operation begins
      * @throws IOException
-     * @throws BytesToWriteExceedMax
+     * @throws com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.BytesToWriteExceedMax
      */
     public void write(byte[] bytes, byte blockAddress) throws IOException, BytesToWriteExceedMax
     {

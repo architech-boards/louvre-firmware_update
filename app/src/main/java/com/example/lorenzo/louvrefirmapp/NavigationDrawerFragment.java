@@ -58,6 +58,16 @@ public class NavigationDrawerFragment extends Fragment {
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
 
+
+    /**
+     * Retrieve the ID of the current selected page in the menu
+     * @return ID of the current selected page
+     */
+    public int getCurrentSelectedPosition()
+    {
+        return mCurrentSelectedPosition;
+    }
+
     public NavigationDrawerFragment() {
     }
 

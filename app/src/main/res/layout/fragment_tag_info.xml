@@ -1,34 +1,70 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.lorenzo.louvrefirmapp.TagInfoFragment">
+    tools:context="com.example.lorenzo.louvrefirmapp.TagInfoFragment"
+    android:orientation="vertical"
+    android:layout_margin="15sp">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/header_info_tag"
+        android:layout_gravity="start"
+        android:textSize="@dimen/default_info_text_size"/>
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30sp">
+
+        <TableRow >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/file_to_send_lb_text"
+                android:textSize="@dimen/default_info_text_size"
+                android:layout_gravity="center_vertical"/>
+            <!-- BUG in android inputType - must use editable = false -->
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:textSize="@dimen/default_info_text_size"
+                android:layout_weight="1"
+                android:id="@+id/et_filename"
+                android:inputType="none"
+                android:editable="false"/>
+        </TableRow>
+        <TableRow>
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/browse_button_text"
+                android:id="@+id/browse_button"
+                android:textSize="@dimen/default_info_text_size"
+                android:layout_weight="1"/>
+        </TableRow>
+    </TableLayout>
+
 
     <TextView
         android:id="@+id/lb_info"
         android:text="@string/lb_tag_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
+        android:layout_gravity="start"
         android:layout_marginTop="50dp"
-        android:textSize="20dp"/>
+        android:textSize="@dimen/default_info_text_size"/>
 
     <TextView
         android:id="@+id/lb_info_text"
         android:text="@string/lb_tag_info_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@id/lb_info"
-        android:layout_marginTop="10dp"/>
+        android:layout_gravity="start"
+        android:layout_marginTop="10dp"
+        android:textSize="@dimen/default_info_text_size"/>
 
-    <Button
-        android:id="@+id/button_scan_tag"
-        android:text="@string/button_scan_tag_text"
-        android:textSize="20dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"/>
-
-</RelativeLayout>
+</LinearLayout>

@@ -1,4 +1,4 @@
-package com.example.lorenzo.louvrefirmapp.NFCLogic;
+package com.example.lorenzo.louvrefirmapp.Utils;
 
 /**
  * Interface for Enums with Byte Value

@@ -2,6 +2,7 @@ package com.example.lorenzo.louvrefirmapp;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -9,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,7 +19,6 @@ import com.example.lorenzo.louvrefirmapp.NFCLogic.Reader;
 
 import java.io.IOException;
 
-//TODO creare logica per inserire address block da prelevare -> pulsante scan tag diventa scan address block specificato
 
 /**
  * A simple {@link Fragment} subclass.
@@ -32,6 +33,7 @@ public class TagInfoFragment extends Fragment implements View.OnClickListener
 {
 
     private OnTagInfoFragmentInterListener onTagInfoFragmentInterListener;
+    private static final int PICKFILE_RESULT_CODE = 1000; // Id for file browser intent
 
     /**
      * Use this factory method to create a new instance of
@@ -60,28 +62,16 @@ public class TagInfoFragment extends Fragment implements View.OnClickListener
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
+                             Bundle savedInstanceState)
+    {
         // Inflate the layout for this fragment
-        View viewInflated = inflater.inflate(R.layout.fragment_tag_info, container, false);
+        View v = inflater.inflate(R.layout.fragment_tag_info, container, false);
 
-        // Set click listeners inside the fragment
-        Button scanButton = (Button) viewInflated.findViewById(R.id.button_scan_tag);
-        scanButton.setOnClickListener(this);
+        Button bt_browse = (Button)v.findViewById(R.id.browse_button);
+        bt_browse.setOnClickListener(this);
 
-        return viewInflated;
+        return v;
     }
-
-    /*
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (onTagInfoFragmentInterListener != null) {
-
-            NumberPicker np = (NumberPicker)getActivity().findViewById(R.id.numberPicker);
-            onTagInfoFragmentInterListener.onScanTagClick(np.getValue());
-        }
-    }
-    */
 
 
     @Override
@@ -96,33 +86,46 @@ public class TagInfoFragment extends Fragment implements View.OnClickListener
         }
     }
 
+
     @Override
     public void onDetach() {
         super.onDetach();
         onTagInfoFragmentInterListener = null;
     }
 
-
-    /**
-     * Handler of view click event inside the fragment (workaround to avoid having onClick logic
-     * only inside the main activity)
-     * @param v
-     */
     @Override
     public void onClick(View v)
     {
-        switch(v.getId())
+        switch (v.getId())
         {
-            case R.id.button_scan_tag:
-            {
-                if (onTagInfoFragmentInterListener != null)
-                {
-                    onTagInfoFragmentInterListener.onScanTagClick(0);//TODO eliminato number pecker
-                }
-                break;
-            }
+            case R.id.browse_button :
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("file/*");
+                startActivityForResult(intent,PICKFILE_RESULT_CODE);
         }
     }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if(resultCode != Activity.RESULT_OK)
+        {
+            Toast.makeText(getActivity().getBaseContext(), "Browse cancelled", Toast.LENGTH_SHORT);
+            return;
+        }
+
+        // Check which request we're responding to
+        switch(requestCode)
+        {
+            case PICKFILE_RESULT_CODE:
+                Uri selectedFile = data.getData();
+                EditText et = (EditText)getActivity().findViewById(R.id.et_filename);
+                et.setText(selectedFile.toString());
+                break;
+        }
+    }
+
 
     /**
      * This interface must be implemented by activities that contain this
@@ -136,7 +139,7 @@ public class TagInfoFragment extends Fragment implements View.OnClickListener
      */
     public interface OnTagInfoFragmentInterListener
     {
-        public void onScanTagClick(int addressBlock);
+        public void onScanTagClick();
     }
 
 }

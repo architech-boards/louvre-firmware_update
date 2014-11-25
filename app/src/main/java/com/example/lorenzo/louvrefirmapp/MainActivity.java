@@ -13,13 +13,15 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
+import android.view.View;
 import android.widget.TextView;
 import android.nfc.NfcAdapter;
 import android.widget.Toast;
 
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Masks;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Reader;
-import com.example.lorenzo.louvrefirmapp.NFCLogic.ReaderNotConnectedException;
+import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.ReaderNotConnectedException;
+import com.example.lorenzo.louvrefirmapp.dummy.RegisterItems;
 
 import java.io.IOException;
 
@@ -27,27 +29,24 @@ import java.io.IOException;
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
-        TagInfoFragment.OnTagInfoFragmentInterListener
+                   TagRegistersFragment.OnFragmentInteractionListener,
+                   TagInfoFragment.OnTagInfoFragmentInterListener
 {
-
 
     transient Reader ntagReader;
 
-    public Reader getNtagReader()
-    {
-        return ntagReader;
-    }
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
     private NavigationDrawerFragment mNavigationDrawerFragment;
 
+    TagRegistersFragment tagRegistersFragment;
+
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
-    private CharSequence mTitle;
-
+    private CharSequence    mTitle;
     private NfcAdapter      mAdapter;
     private PendingIntent   mPendingIntent;
     private IntentFilter[]  mFilters;
@@ -103,10 +102,22 @@ public class MainActivity extends Activity
     @Override
     public void onNewIntent(Intent intent){
 
-        // Fetch the tag from the intent
+        // Fetch the tag from the intent and create the reader object
         Tag discoveredTag = (Tag)intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-
         this.ntagReader = new Reader(discoveredTag);
+
+        // Switch the page displayed to find the operation to perform on the tag
+        switch(this.mNavigationDrawerFragment.getCurrentSelectedPosition())
+        {
+            // Tag info fragment
+            case 0:
+                readTagRegisters();
+                break;
+
+            // Firmware upload fragment
+            case 1:
+                // TODO implementare gestione via SRAM
+        }
     }
 
     @Override
@@ -114,26 +125,32 @@ public class MainActivity extends Activity
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getFragmentManager();
 
-        switch(position)
+        switch(position) // Changes here may need to change also onNewIntent position based switch logic
         {
             case 0:
             {
-                fragmentManager.beginTransaction()
-                        .replace(R.id.container, TagInfoFragment.newInstance())
-                        .commit();
+                fragmentManager.beginTransaction().replace(R.id.container,
+                        TagInfoFragment.newInstance()).commit();
                 break;
             }
-        }
 
+            case 1:
+                tagRegistersFragment = TagRegistersFragment.newInstance("param1", "param2");
+                fragmentManager.beginTransaction().replace(R.id.container,
+                        tagRegistersFragment).commit();
+        }
+    }
+
+    public void addItemClick(View buttonClicked)
+    {
+        tagRegistersFragment.addItemToList(new RegisterItems.Item("id", "content"));
     }
 
 
     /**
-     * Handler or click of scan tag button
-     *
-     * @param addressBlock Address block to read
+     * Read the tag registers and display them to the user
      */
-    public void readSpecifiedAddressBlock(int addressBlock)
+    public void readTagRegisters()
     {
         String errorNoTag =         "No tag scanned";
         String errorConnect =       "Failed to connect to the tag";
@@ -160,7 +177,7 @@ public class MainActivity extends Activity
             return;
         }
 
-        // Communicate with the tag and close the communication at the end
+        // Communicate with the tag retrieving registers information and close the communication at the end
         try
         {
             byte RF_LOCKED = this.ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.RF_LOCKED);
@@ -184,18 +201,18 @@ public class MainActivity extends Activity
         }
         catch(IndexOutOfBoundsException iobexc)
         {
-            Toast.makeText(getApplicationContext(), errorAddress + " " + addressBlock,
+            Toast.makeText(getApplicationContext(), errorAddress,
                     Toast.LENGTH_SHORT).show();
         }
         catch (ReaderNotConnectedException rncexc)
         {
-            Toast.makeText(getApplicationContext(), errorAddress + " " + addressBlock,
+            Toast.makeText(getApplicationContext(), notConnected,
                     Toast.LENGTH_SHORT).show();
         }
 
         if(!this.ntagReader.disconnect())
         {
-            Toast.makeText(getApplicationContext(), notConnected,
+            Toast.makeText(getApplicationContext(), errorDisconnect,
                     Toast.LENGTH_SHORT).show();
         }
     }
@@ -252,9 +269,15 @@ public class MainActivity extends Activity
 
 
     @Override
-    public void onScanTagClick(int addressBlock)
+    public void onScanTagClick()
     {
-        readSpecifiedAddressBlock(addressBlock);
+        readTagRegisters();
+    }
+
+    @Override
+    public void onFragmentInteraction(String id)
+    {
+
     }
 
 

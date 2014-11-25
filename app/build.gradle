@@ -1,3 +1,4 @@
+
 apply plugin: 'com.android.application'
 
 android {
@@ -6,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.lorenzo.louvrefirmapp"
-        minSdkVersion 19
+        minSdkVersion 15
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
