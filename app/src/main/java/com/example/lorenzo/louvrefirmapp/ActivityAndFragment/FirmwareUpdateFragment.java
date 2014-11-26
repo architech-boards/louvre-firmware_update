@@ -1,7 +1,6 @@
-package com.example.lorenzo.louvrefirmapp;
+package com.example.lorenzo.louvrefirmapp.ActivityAndFragment;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,25 +10,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.NumberPicker;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.lorenzo.louvrefirmapp.NFCLogic.Reader;
-
-import java.io.IOException;
+import com.example.lorenzo.louvrefirmapp.R;
 
 
 /**
- * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link com.example.lorenzo.louvrefirmapp.TagInfoFragment.OnTagInfoFragmentInterListener} interface
+ * {@link FirmwareUpdateFragment.OnTagInfoFragmentInterListener} interface
  * to handle interaction events.
- * Use the {@link TagInfoFragment#newInstance} factory method to
- * create an instance of this fragment.
- *
  */
-public class TagInfoFragment extends Fragment implements View.OnClickListener
+public class FirmwareUpdateFragment extends Fragment implements View.OnClickListener
 {
 
     private OnTagInfoFragmentInterListener onTagInfoFragmentInterListener;
@@ -41,9 +32,9 @@ public class TagInfoFragment extends Fragment implements View.OnClickListener
      *
      * @return A new instance of fragment TagInfoFragment.
      */
-    public static TagInfoFragment newInstance()
+    public static FirmwareUpdateFragment newInstance()
     {
-        TagInfoFragment fragment = new TagInfoFragment();
+        FirmwareUpdateFragment fragment = new FirmwareUpdateFragment();
 
         // Parse Bundle for ntagReader
         Bundle args = new Bundle();
@@ -51,7 +42,7 @@ public class TagInfoFragment extends Fragment implements View.OnClickListener
 
         return fragment;
     }
-    public TagInfoFragment() {
+    public FirmwareUpdateFragment() {
         // Required empty public constructor
     }
 
@@ -60,12 +51,13 @@ public class TagInfoFragment extends Fragment implements View.OnClickListener
         super.onCreate(savedInstanceState);
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_tag_info, container, false);
+        View v = inflater.inflate(R.layout.fragment_firmware_upload, container, false);
 
         Button bt_browse = (Button)v.findViewById(R.id.browse_button);
         bt_browse.setOnClickListener(this);
@@ -93,6 +85,7 @@ public class TagInfoFragment extends Fragment implements View.OnClickListener
         onTagInfoFragmentInterListener = null;
     }
 
+
     @Override
     public void onClick(View v)
     {
@@ -111,7 +104,7 @@ public class TagInfoFragment extends Fragment implements View.OnClickListener
     {
         if(resultCode != Activity.RESULT_OK)
         {
-            Toast.makeText(getActivity().getBaseContext(), "Browse cancelled", Toast.LENGTH_SHORT);
+            Toast.makeText(getActivity().getBaseContext(), "Browse cancelled", Toast.LENGTH_SHORT).show();
             return;
         }
 

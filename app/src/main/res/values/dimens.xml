@@ -7,4 +7,5 @@
          https://developer.android.com/design/patterns/navigation-drawer.html -->
     <dimen name="navigation_drawer_width">240dp</dimen>
     <dimen name="default_info_text_size">15sp</dimen>
+    <dimen name="default_header_text_size">20sp</dimen>
 </resources>

@@ -3,14 +3,41 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.lorenzo.louvrefirmapp.TagRegistersFragment"
-    android:orientation="vertical">
+    tools:context="com.example.lorenzo.louvrefirmapp.ActivityAndFragment.TagRegistersFragment"
+    android:orientation="vertical"
+    android:layout_margin="15sp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/header_info_tag_info"
+        android:layout_gravity="start"
+        android:textSize="@dimen/default_info_text_size"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="add item"
-        android:onClick="addItemClick"/>
+        android:text="add item test"
+        android:onClick="addItemClick"
+        android:layout_gravity="end"/>
+
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:stretchColumns="1">
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/listview_header_1"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:text="@string/listview_header_2"/>
+        </TableRow>
+    </TableLayout>
 
     <ListView
         android:id="@android:id/list"

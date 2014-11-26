@@ -1,4 +1,4 @@
-package com.example.lorenzo.louvrefirmapp;
+package com.example.lorenzo.louvrefirmapp.ActivityAndFragment;
 
 import android.app.Activity;
 
@@ -21,7 +21,8 @@ import android.widget.Toast;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Masks;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Reader;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.ReaderNotConnectedException;
-import com.example.lorenzo.louvrefirmapp.dummy.RegisterItems;
+import com.example.lorenzo.louvrefirmapp.R;
+import com.example.lorenzo.louvrefirmapp.RegistersListview.RegisterItems;
 
 import java.io.IOException;
 
@@ -30,7 +31,7 @@ import java.io.IOException;
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
                    TagRegistersFragment.OnFragmentInteractionListener,
-                   TagInfoFragment.OnTagInfoFragmentInterListener
+                   FirmwareUpdateFragment.OnTagInfoFragmentInterListener
 {
 
     transient Reader ntagReader;
@@ -129,17 +130,21 @@ public class MainActivity extends Activity
         {
             case 0:
             {
+                this.tagRegistersFragment = TagRegistersFragment.newInstance();
                 fragmentManager.beginTransaction().replace(R.id.container,
-                        TagInfoFragment.newInstance()).commit();
+                        tagRegistersFragment).commit();
                 break;
             }
 
             case 1:
-                tagRegistersFragment = TagRegistersFragment.newInstance("param1", "param2");
+            {
                 fragmentManager.beginTransaction().replace(R.id.container,
-                        tagRegistersFragment).commit();
+                        FirmwareUpdateFragment.newInstance()).commit();
+                break;
+            }
         }
     }
+
 
     public void addItemClick(View buttonClicked)
     {

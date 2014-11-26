@@ -11,8 +11,11 @@
     <string name="button_scan_tag_text"><b>Scan NTAG</b></string>
     <string name="lb_tag_info">Scanned TAG info</string>
     <string name="lb_tag_info_text"> </string>
-    <string name="header_info_tag">Select the file to send to the board and place your phone on the TAG</string>
+    <string name="header_info_firm_upload">Select the file to send to the board and place your phone on the TAG</string>
+    <string name="header_info_tag_info">Place your phone on the TAG to retrieve registers info</string>
     <string name="file_to_send_lb_text">File to send</string>
     <string name="browse_button_text">Browse</string>
+    <string name="listview_header_1">REGISTER NAME</string>
+    <string name="listview_header_2">REGISTER VALUE</string>
 
 </resources>

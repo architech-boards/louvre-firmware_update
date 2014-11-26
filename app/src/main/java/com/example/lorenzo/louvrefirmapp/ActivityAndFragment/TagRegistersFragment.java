@@ -1,4 +1,4 @@
-package com.example.lorenzo.louvrefirmapp;
+package com.example.lorenzo.louvrefirmapp.ActivityAndFragment;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -9,11 +9,12 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
 
-import com.example.lorenzo.louvrefirmapp.dummy.RegisterItems;
+import com.example.lorenzo.louvrefirmapp.R;
+import com.example.lorenzo.louvrefirmapp.RegistersListview.RegisterItems;
+import com.example.lorenzo.louvrefirmapp.RegistersListview.RegisterListAdapter;
 
 /**
  * A fragment representing a list of Items.
@@ -22,17 +23,8 @@ import com.example.lorenzo.louvrefirmapp.dummy.RegisterItems;
  * with a GridView.
  * <p />
  */
-public class TagRegistersFragment extends Fragment implements AbsListView.OnItemClickListener {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
+public class TagRegistersFragment extends Fragment implements AbsListView.OnItemClickListener
+{
     private OnFragmentInteractionListener mListener;
 
     RegisterItems   registerItems;
@@ -48,44 +40,41 @@ public class TagRegistersFragment extends Fragment implements AbsListView.OnItem
      */
     private ArrayAdapter<RegisterItems.Item> mAdapter;
 
-    // TODO: Rename and change types of parameters
-    public static TagRegistersFragment newInstance(String param1, String param2) {
-        TagRegistersFragment fragment = new TagRegistersFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
 
-        return fragment;
+    public static TagRegistersFragment newInstance()
+    {
+        return new TagRegistersFragment();
     }
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public TagRegistersFragment() {
-    }
+    public TagRegistersFragment() { }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-
         registerItems = new RegisterItems();
 
-        // TODO: Change Adapter to display your content
-        mAdapter = new ArrayAdapter<RegisterItems.Item>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, registerItems.getItemsList());
+//        mAdapter = new RegisterListAdapter<RegisterItems.Item>(getActivity(),
+//                R.layout.register_list_item, registerItems.getItemsList());
+        mAdapter = new RegisterListAdapter<RegisterItems.Item>(getActivity(),
+                android.R.layout.simple_spinner_item, registerItems.getItemsList());
     }
 
+
+    /**
+     * Add specified registerItem element to the list
+     * @param registerItem element to add to the list
+     */
     public void addItemToList(RegisterItems.Item registerItem)
     {
-        mAdapter.add(new RegisterItems.Item("new item id", "content"));
+        mAdapter.add(registerItem);
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -94,13 +83,14 @@ public class TagRegistersFragment extends Fragment implements AbsListView.OnItem
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+       (mListView).setAdapter(mAdapter);
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
 
         return view;
     }
+
 
     @Override
     public void onAttach(Activity activity) {
@@ -112,6 +102,7 @@ public class TagRegistersFragment extends Fragment implements AbsListView.OnItem
                 + " must implement OnFragmentInteractionListener");
         }
     }
+
 
     @Override
     public void onDetach() {
@@ -129,6 +120,7 @@ public class TagRegistersFragment extends Fragment implements AbsListView.OnItem
         }
     }
 
+
     /**
      * The default content for this Fragment has a TextView that is shown when
      * the list is empty. If you would like to change the text, call this method
@@ -141,6 +133,7 @@ public class TagRegistersFragment extends Fragment implements AbsListView.OnItem
             ((TextView) emptyView).setText(emptyText);
         }
     }
+
 
     /**
     * This interface must be implemented by activities that contain this

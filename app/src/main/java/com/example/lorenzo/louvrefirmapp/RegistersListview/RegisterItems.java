@@ -1,4 +1,4 @@
-package com.example.lorenzo.louvrefirmapp.dummy;
+package com.example.lorenzo.louvrefirmapp.RegistersListview;
 
 import java.util.ArrayList;
 import java.util.HashMap;
