@@ -13,7 +13,7 @@
               android:textAppearance="?android:attr/textAppearanceListItemSmall"
               android:gravity="center_vertical"
               android:minHeight="?android:attr/listPreferredItemHeightSmall"
-              android:textSize="@dimen/default_header_text_size"
+              android:textSize="@dimen/default_info_text_size"
               android:textStyle="bold"/>
 
     <TextView xmlns:android="http://schemas.android.com/apk/res/android"
@@ -23,6 +23,6 @@
               android:textAppearance="?android:attr/textAppearanceListItemSmall"
               android:gravity="end|center_vertical"
               android:minHeight="?android:attr/listPreferredItemHeightSmall"
-              android:textSize="@dimen/default_header_text_size"/>
+              android:textSize="@dimen/default_info_text_size"/>
 
 </LinearLayout>

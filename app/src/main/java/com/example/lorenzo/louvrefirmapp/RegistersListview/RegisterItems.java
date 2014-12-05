@@ -9,7 +9,6 @@ import java.util.Map;
  * Helper class for providing sample content for user interfaces created by
  * Android template wizards.
  * <p>
- * TODO: Replace all uses of this class before publishing your app.
  * TODO sistemare javadoc
  */
 public class RegisterItems
@@ -49,6 +48,11 @@ public class RegisterItems
         public String getContent()
         {
             return content;
+        }
+
+        public void setContent(String content)
+        {
+            this.content = content;
         }
 
 

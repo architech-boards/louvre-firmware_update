@@ -3,6 +3,8 @@ package com.example.lorenzo.louvrefirmapp.NFCLogic;
 import android.nfc.FormatException;
 import android.nfc.Tag;
 import android.nfc.tech.NfcA;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.BytesToWriteExceedMax;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.ReaderNotConnectedException;
@@ -227,6 +229,13 @@ public class Reader
     public void writeSRAM(byte[] bytes) throws IOException, FormatException, BytesToWriteExceedMax,
                                                ReaderNotConnectedException
     {
+        // TODO add timeout to avoid indefinite blocking and handle exception timeout
+        // Wait for PTHRU_ON_OFF
+        Log.d("Write SRAM", "Start waiting for PTHRU_ON_OFF set to 1 ...");
+        while(get_NC_REG_sessField(Masks.NC_REG_Sess.PTHRU_ON_OFF) != 0)
+        { }
+        Log.d("Write SRAM", "Found PTHRU_ON_OFF set to 1 ...");
+
         // Validate bytes dimension
         if(bytes.length > 64)
         {
@@ -237,6 +246,7 @@ public class Reader
         int bytesToWriteIndex = 0;
 
         selectSector(Addresses.Sector.SECTOR_1);
+        Log.d("Write SRAM", "Memory sector 1 selected");
 
         // Divide the bytes to write into 4 blocks of 4 bytes each because the write function can
         // handle only 4 bytes at the time
@@ -256,7 +266,15 @@ public class Reader
             }
 
             write(TxBuffer, (byte) (Addresses.Registers.SRAM_BEGIN.getValue() + i));
+            Log.d("Write SRAM", i + " written 4 bytes");
         }
+
+        // TODO add timeout to avoid indefinite blocking and handle exception timeout
+        // Wait for I2C (to read the buffer)
+        Log.d("Write SRAM", "Start waiting for RF_LOCKED set to 0 ...");
+        while(get_NS_REG_sessField(Masks.NS_REG_Sess.RF_LOCKED) == 1)
+        { }
+        Log.d("Write SRAM", "SRAM written successfully");
     }
 
 
@@ -314,7 +332,7 @@ public class Reader
      * @throws IOException
      * @throws ReaderNotConnectedException
      */
-    public byte get_NC_REG_sessfield(Masks.NC_REG_Sess field) throws IOException, ReaderNotConnectedException
+    public byte get_NC_REG_sessField(Masks.NC_REG_Sess field) throws IOException, ReaderNotConnectedException
     {
         byte regValue = getSessionReg(Addresses.SessionRegisters.NC_REG);
 

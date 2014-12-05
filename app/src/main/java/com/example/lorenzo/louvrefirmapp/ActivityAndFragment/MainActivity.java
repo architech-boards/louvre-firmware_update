@@ -7,9 +7,11 @@ import android.app.FragmentManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.nfc.FormatException;
 import android.nfc.Tag;
 import android.nfc.tech.NfcA;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
@@ -18,6 +20,7 @@ import android.widget.TextView;
 import android.nfc.NfcAdapter;
 import android.widget.Toast;
 
+import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.BytesToWriteExceedMax;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Masks;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Reader;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.ReaderNotConnectedException;
@@ -25,6 +28,7 @@ import com.example.lorenzo.louvrefirmapp.R;
 import com.example.lorenzo.louvrefirmapp.RegistersListview.RegisterItems;
 
 import java.io.IOException;
+import java.util.FormatFlagsConversionMismatchException;
 
 //TODO sistemare codice pulendo commmenti e eliminando riferimenti non utilizzati
 
@@ -117,7 +121,8 @@ public class MainActivity extends Activity
 
             // Firmware upload fragment
             case 1:
-                // TODO implementare gestione via SRAM
+                writeFakeDataToSRAM();
+                break;
         }
     }
 
@@ -146,12 +151,6 @@ public class MainActivity extends Activity
     }
 
 
-    public void addItemClick(View buttonClicked)
-    {
-        tagRegistersFragment.addItemToList(new RegisterItems.Item("id", "content"));
-    }
-
-
     /**
      * Read the tag registers and display them to the user
      */
@@ -172,8 +171,6 @@ public class MainActivity extends Activity
             return;
         }
 
-        TextView tagInfo = (TextView)findViewById(R.id.lb_info_text);
-
         // Try to open a connection to the tag
         if(!this.ntagReader.connect())
         {
@@ -185,19 +182,30 @@ public class MainActivity extends Activity
         // Communicate with the tag retrieving registers information and close the communication at the end
         try
         {
-            byte RF_LOCKED = this.ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.RF_LOCKED);
-            byte I2C_LOCKED = this.ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.I2C_LOCKED);
-            byte RF_FIELD_PRESENT = this.ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.RF_FIELD_PRESENT);
-            byte SRAM_RF_READY = this.ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.SRAM_RF_READY);
-            byte SRAM_I2C_READY = this.ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.SRAM_I2C_READY);
-            byte PTHRU_ON_OFF = this.ntagReader.get_NC_REG_sessfield(Masks.NC_REG_Sess.PTHRU_ON_OFF);
+            // Wait for PTHRU_ON_OFF
+            Log.d("Read registers", "Start waiting for PTHRU_ON_OFF set to 1 ...");
+            while(ntagReader.get_NC_REG_sessField(Masks.NC_REG_Sess.PTHRU_ON_OFF) == 0)
+            { }
 
-            tagInfo.setText(" RF_LOCKED=" + Byte.toString(RF_LOCKED) + "\n" +
-                            " I2C_LOCKED=" + Byte.toString(I2C_LOCKED) + "\n" +
-                            " RF_FIELD_PRESENT=" + Byte.toString(RF_FIELD_PRESENT) + "\n" +
-                            " SRAM_RF_READY=" + Byte.toString(SRAM_RF_READY) + "\n" +
-                            " SRAM_I2C_READY=" + Byte.toString(SRAM_I2C_READY) + "\n" +
-                            " PTHRU_ON_OFF=" + Byte.toString(PTHRU_ON_OFF));
+            Log.d("Read registers", "Start retrieving registers info ...");
+            tagRegistersFragment.addItemToList(new RegisterItems.Item("RF_LOCKED",
+                    Byte.toString(ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.RF_LOCKED))));
+            tagRegistersFragment.addItemToList(new RegisterItems.Item("I2C_LOCKED",
+                    Byte.toString(ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.I2C_LOCKED))));
+            tagRegistersFragment.addItemToList(new RegisterItems.Item("RF_FIELD_PRESENT",
+                    Byte.toString(ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.RF_FIELD_PRESENT))));
+            tagRegistersFragment.addItemToList(new RegisterItems.Item("SRAM_RF_READY",
+                    Byte.toString(ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.SRAM_RF_READY))));
+            tagRegistersFragment.addItemToList(new RegisterItems.Item("SRAM_I2C_READY",
+                    Byte.toString(ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.SRAM_I2C_READY))));
+            tagRegistersFragment.addItemToList(new RegisterItems.Item("PTHRU_ON_OFF",
+                    Byte.toString(ntagReader.get_NC_REG_sessField(Masks.NC_REG_Sess.PTHRU_ON_OFF))));
+            tagRegistersFragment.addItemToList(new RegisterItems.Item("FD_ON",
+                    Byte.toString(ntagReader.get_NC_REG_sessField(Masks.NC_REG_Sess.FD_ON))));
+            tagRegistersFragment.addItemToList(new RegisterItems.Item("FD_OFF",
+                    Byte.toString(ntagReader.get_NC_REG_sessField(Masks.NC_REG_Sess.FD_OFF))));
+
+            Log.d("Read registers", "Registers info retrieved");
         }
         catch (IOException ioexc)
         {
@@ -219,6 +227,70 @@ public class MainActivity extends Activity
         {
             Toast.makeText(getApplicationContext(), errorDisconnect,
                     Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    private void writeFakeDataToSRAM()
+    {
+        String errorNoTag =         "No tag scanned";
+        String errorConnect =       "Failed to connect to the tag";
+        String errorWrite =         "Failed to write SRAM";
+        String errorDisconnect =    "Failed to disconnect from the tag";
+        String errorAddress =       "Address block is out of range";
+        String notConnected =       "Reader not connected";
+        String dataToLong =         "Data to write is over 64 bytes";
+        String dataFormat =         "Data format exception";
+
+        // Check if a tag was scanned
+        if(this.ntagReader == null)
+        {
+            Toast.makeText(getApplicationContext(), errorNoTag, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Try to open a connection to the tag
+        if(!this.ntagReader.connect())
+        {
+            Toast.makeText(getApplicationContext(), errorConnect, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Communicate with the tag writing to SRAM and close the communication at the end
+        try
+        {
+            byte[] fakeData = new byte[64];
+            for(int i = 0; i < fakeData.length; i++)
+            {
+                fakeData[i] = 0x0A;
+            }
+            ntagReader.writeSRAM(fakeData); // Write fake data to SRAM
+            Toast.makeText(getApplicationContext(), "SRAM written", Toast.LENGTH_SHORT).show();
+        }
+        catch (IOException ioexc)
+        {
+            Toast.makeText(getApplicationContext(), errorWrite, Toast.LENGTH_SHORT).show();
+        }
+        catch(IndexOutOfBoundsException iobexc)
+        {
+            Toast.makeText(getApplicationContext(), errorAddress, Toast.LENGTH_SHORT).show();
+        }
+        catch (ReaderNotConnectedException rncexc)
+        {
+            Toast.makeText(getApplicationContext(), notConnected, Toast.LENGTH_SHORT).show();
+        }
+        catch (BytesToWriteExceedMax bmax)
+        {
+            Toast.makeText(getApplicationContext(), dataToLong, Toast.LENGTH_SHORT).show();
+        }
+        catch (FormatException formexc)
+        {
+            Toast.makeText(getApplicationContext(), dataFormat, Toast.LENGTH_SHORT).show();
+        }
+
+        if(!this.ntagReader.disconnect())
+        {
+            Toast.makeText(getApplicationContext(), errorDisconnect, Toast.LENGTH_SHORT).show();
         }
     }
 

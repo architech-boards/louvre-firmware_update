@@ -14,16 +14,10 @@
         android:layout_gravity="start"
         android:textSize="@dimen/default_info_text_size"/>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="add item test"
-        android:onClick="addItemClick"
-        android:layout_gravity="end"/>
-
     <TableLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10sp"
         android:stretchColumns="1">
         <TableRow>
             <TextView

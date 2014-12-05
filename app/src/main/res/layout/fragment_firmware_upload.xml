@@ -48,23 +48,4 @@
         </TableRow>
     </TableLayout>
 
-
-    <TextView
-        android:id="@+id/lb_info"
-        android:text="@string/lb_tag_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:layout_marginTop="50dp"
-        android:textSize="@dimen/default_info_text_size"/>
-
-    <TextView
-        android:id="@+id/lb_info_text"
-        android:text="@string/lb_tag_info_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:layout_marginTop="10dp"
-        android:textSize="@dimen/default_info_text_size"/>
-
 </LinearLayout>

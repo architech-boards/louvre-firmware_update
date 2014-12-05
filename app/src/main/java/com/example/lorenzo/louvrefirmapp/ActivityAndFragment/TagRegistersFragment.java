@@ -67,11 +67,24 @@ public class TagRegistersFragment extends Fragment implements AbsListView.OnItem
 
 
     /**
-     * Add specified registerItem element to the list
+     * Add specified registerItem element to the list if not already present. Otherwise update the
+     * one already in the list
      * @param registerItem element to add to the list
      */
     public void addItemToList(RegisterItems.Item registerItem)
     {
+        for(int i = 0; i < mAdapter.getCount(); i++)
+        {
+            RegisterItems.Item currentItem = mAdapter.getItem(i);
+            if(currentItem.getId().equals(registerItem.getId()))
+            {
+                currentItem.setContent(registerItem.getContent());
+                mAdapter.notifyDataSetChanged();
+
+                return;
+            }
+        }
+
         mAdapter.add(registerItem);
     }
 
