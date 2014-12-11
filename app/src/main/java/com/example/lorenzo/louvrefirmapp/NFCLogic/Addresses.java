@@ -2,9 +2,7 @@ package com.example.lorenzo.louvrefirmapp.NFCLogic;
 
 import com.example.lorenzo.louvrefirmapp.Utils.ByteEnum;
 
-/**
- * Created by Lorenzo on 08/11/2014.
- */
+
 public class Addresses
 {
     public enum Sector implements ByteEnum

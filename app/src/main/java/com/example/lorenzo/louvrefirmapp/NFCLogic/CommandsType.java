@@ -2,9 +2,7 @@ package com.example.lorenzo.louvrefirmapp.NFCLogic;
 
 import com.example.lorenzo.louvrefirmapp.Utils.ByteEnum;
 
-/**
- * Created by Lorenzo on 31/10/2014.
- */
+
 public enum CommandsType implements ByteEnum.Byte_enum
 {
     READ((byte)0x30),

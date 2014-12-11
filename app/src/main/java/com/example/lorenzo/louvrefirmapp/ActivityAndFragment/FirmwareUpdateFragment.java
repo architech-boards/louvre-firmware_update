@@ -121,6 +121,18 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
 
 
     /**
+     * Retrieve the path of the selected file
+     * @return
+     * File path
+     */
+    public String getBrowsedFilePath()
+    {
+        EditText et = (EditText)getActivity().findViewById(R.id.et_filename);
+        return et.getText().toString();
+    }
+
+
+    /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that

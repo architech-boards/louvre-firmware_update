@@ -5,12 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Helper class for providing sample content for user interfaces created by
- * Android template wizards.
- * <p>
- * TODO sistemare javadoc
- */
+
+ // TODO sistemare javadoc
 public class RegisterItems
 {
     List<Item> ItemsList = new ArrayList<Item>();

@@ -179,7 +179,8 @@ public class MainActivity extends Activity
             return;
         }
 
-        // Communicate with the tag retrieving registers information and close the communication at the end
+        // Communicate with the tag retrieving registers information and close the communication
+        // at the end
         try
         {
             // Wait for PTHRU_ON_OFF
@@ -188,6 +189,7 @@ public class MainActivity extends Activity
             { }
 
             Log.d("Read registers", "Start retrieving registers info ...");
+            tagRegistersFragment.addItemToList(new RegisterItems.Item("SESSION REGISTERS", ""));
             tagRegistersFragment.addItemToList(new RegisterItems.Item("RF_LOCKED",
                     Byte.toString(ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.RF_LOCKED))));
             tagRegistersFragment.addItemToList(new RegisterItems.Item("I2C_LOCKED",
@@ -200,8 +202,17 @@ public class MainActivity extends Activity
                     Byte.toString(ntagReader.get_NS_REG_sessField(Masks.NS_REG_Sess.SRAM_I2C_READY))));
             tagRegistersFragment.addItemToList(new RegisterItems.Item("PTHRU_ON_OFF",
                     Byte.toString(ntagReader.get_NC_REG_sessField(Masks.NC_REG_Sess.PTHRU_ON_OFF))));
+            tagRegistersFragment.addItemToList(new RegisterItems.Item("PTHRU_DIR",
+                    Byte.toString(ntagReader.get_NC_REG_sessField(Masks.NC_REG_Sess.PTHRU_DIR))));
             tagRegistersFragment.addItemToList(new RegisterItems.Item("FD_ON",
                     Byte.toString(ntagReader.get_NC_REG_sessField(Masks.NC_REG_Sess.FD_ON))));
+            tagRegistersFragment.addItemToList(new RegisterItems.Item("FD_OFF",
+                    Byte.toString(ntagReader.get_NC_REG_sessField(Masks.NC_REG_Sess.FD_OFF))));
+
+            tagRegistersFragment.addItemToList(new RegisterItems.Item("CONFIGURATION REGISTERS", ""));
+            tagRegistersFragment.addItemToList(new RegisterItems.Item("TRANSFER_DIR",
+                    Byte.toString(ntagReader.get_NC_REG_confField(Masks.NC_REG_Conf.TRANSFER_DIR))));
+
             tagRegistersFragment.addItemToList(new RegisterItems.Item("FD_OFF",
                     Byte.toString(ntagReader.get_NC_REG_sessField(Masks.NC_REG_Sess.FD_OFF))));
 

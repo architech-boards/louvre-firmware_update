@@ -26,12 +26,14 @@ public class RegisterListAdapter<T> extends ArrayAdapter<RegisterItems.Item>
         public TextView t2;
     }
 
+
     public RegisterListAdapter(Context context, int resource, List<RegisterItems.Item> objects)
     {
         super(context, resource, objects);
 
         this.itemsList = objects;
     }
+
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent)

@@ -11,9 +11,7 @@ import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.ReaderNotConnectedExceptio
 
 import java.io.IOException;
 
-/**
- * Created by Lorenzo on 31/10/2014.
- */
+
 public class Reader
 {
     NfcA                nfcA;
@@ -220,8 +218,8 @@ public class Reader
 
 
     /**
-     * Write specified 64 bytes to the SRAM of the TAG.
-     * N.B: it can write a maximum of 64 bytes (16 memory pages)
+     * Write specified bytes to the SRAM buffer of the TAG.
+     * N.B: maximum # of bytes allowed is 64 (16 memory pages)
      * @param bytes bytes to write
      * @throws IOException
      * @throws android.nfc.FormatException
@@ -229,12 +227,17 @@ public class Reader
     public void writeSRAM(byte[] bytes) throws IOException, FormatException, BytesToWriteExceedMax,
                                                ReaderNotConnectedException
     {
-        // TODO add timeout to avoid indefinite blocking and handle exception timeout
+        // TODO add timeout to avoid indefinite blocking
         // Wait for PTHRU_ON_OFF
         Log.d("Write SRAM", "Start waiting for PTHRU_ON_OFF set to 1 ...");
-        while(get_NC_REG_sessField(Masks.NC_REG_Sess.PTHRU_ON_OFF) != 0)
+        while(get_NC_REG_sessField(Masks.NC_REG_Sess.PTHRU_ON_OFF) == 0)
         { }
         Log.d("Write SRAM", "Found PTHRU_ON_OFF set to 1 ...");
+        // Wait for I2C_LOCKED
+        Log.d("Write SRAM", "Start waiting for I2C_LOCKED set to 0 ...");
+        while(get_NS_REG_sessField(Masks.NS_REG_Sess.I2C_LOCKED) == 1)
+        { }
+        Log.d("Write SRAM", "Found I2C_LOCKED set to 0 ...");
 
         // Validate bytes dimension
         if(bytes.length > 64)
@@ -245,6 +248,7 @@ public class Reader
         byte[] TxBuffer = new byte[4];
         int bytesToWriteIndex = 0;
 
+        // Select sector 1 where SRAM buffer is mapped
         selectSector(Addresses.Sector.SECTOR_1);
         Log.d("Write SRAM", "Memory sector 1 selected");
 
@@ -265,16 +269,18 @@ public class Reader
                 }
             }
 
-            write(TxBuffer, (byte) (Addresses.Registers.SRAM_BEGIN.getValue() + i));
-            Log.d("Write SRAM", i + " written 4 bytes");
+            byte blockAddress = (byte)(Addresses.Registers.SRAM_BEGIN.getValue() + i);
+            Log.d("Write SRAM", "Writing 4 bytes to address " + blockAddress  + "...");
+            write(TxBuffer, blockAddress);
+            Log.d("Write SRAM", "4 bytes written to address " + blockAddress + "...");
         }
 
-        // TODO add timeout to avoid indefinite blocking and handle exception timeout
-        // Wait for I2C (to read the buffer)
+        // TODO add timeout to avoid indefinite blocking
+        // Wait for I2C to read the data on SRAM buffer
         Log.d("Write SRAM", "Start waiting for RF_LOCKED set to 0 ...");
         while(get_NS_REG_sessField(Masks.NS_REG_Sess.RF_LOCKED) == 1)
         { }
-        Log.d("Write SRAM", "SRAM written successfully");
+        Log.d("Write SRAM", "SRAM buffer written successfully");
     }
 
 
@@ -311,7 +317,7 @@ public class Reader
 
 
     /**
-     * Get the specified field of the  Configuration NC_REG
+     * Get the specified field of the Configuration NC_REG
      * @param field field to retrieve
      * @return requested field value
      * @throws IOException
@@ -326,7 +332,7 @@ public class Reader
 
 
     /**
-     * Get the specified field of the register Session NC_REG
+     * Get the specified field of the Session NC_REG
      * @param field field to retrieve
      * @return requested field value
      * @throws IOException
@@ -356,26 +362,20 @@ public class Reader
 
 
     /**
-     * Set the specified session register
-     * @param sessionReg session register to retrieve
      * @return session register byte requested
      * @throws IOException
      * @throws ReaderNotConnectedException
      */
-    public void set_PTHRU_ON_OFF(Addresses.SessionRegisters sessionReg) throws IOException,
+    public void setBit() throws IOException,
             ReaderNotConnectedException
     {
         /*
-        digit|=1<<position_in_digit;
-        sets the bit
-        digit^=1<<position_in_digit;
-        unsets the bit.
-        selectSector(Addresses.Sector.SECTOR_3);
+        // Set the bit
+        digit |= 1 << bit_to_set_pos;
 
-        return read(Addresses.Registers.SESSION.getValue())[sessionReg.getValue()];*/
+        // Unset the bit.
+        digit &= ~(1 << bit_to_set_pos);
+        */
     }
 
-
-    //TODO creare setSessionReg
-    //TODO testare le nuove funzioni di gestione registri
 }
