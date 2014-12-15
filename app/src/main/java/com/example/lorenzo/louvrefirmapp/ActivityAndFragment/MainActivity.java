@@ -270,38 +270,43 @@ public class MainActivity extends Activity
         // Communicate with the tag writing to SRAM and close the communication at the end
         try
         {
-            byte[] fakeData = new byte[64];
+            byte[] fakeData = new byte[320]; // 5 write operation required
+            byte fakeValue = 1;
             for(int i = 0; i < fakeData.length; i++)
             {
-                fakeData[i] = 0x0A;
+                if((i % 64) == 0)
+                {
+                    fakeValue ++;
+                }
+                fakeData[i] = fakeValue;
             }
             ntagReader.writeSRAM(fakeData); // Write fake data to SRAM
-            Toast.makeText(getApplicationContext(), "SRAM written", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "SRAM written", Toast.LENGTH_LONG).show();
         }
         catch (IOException ioexc)
         {
-            Toast.makeText(getApplicationContext(), errorWrite, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), errorWrite, Toast.LENGTH_LONG).show();
         }
         catch(IndexOutOfBoundsException iobexc)
         {
-            Toast.makeText(getApplicationContext(), errorAddress, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), errorAddress, Toast.LENGTH_LONG).show();
         }
         catch (ReaderNotConnectedException rncexc)
         {
-            Toast.makeText(getApplicationContext(), notConnected, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), notConnected, Toast.LENGTH_LONG).show();
         }
         catch (BytesToWriteExceedMax bmax)
         {
-            Toast.makeText(getApplicationContext(), dataToLong, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), dataToLong, Toast.LENGTH_LONG).show();
         }
         catch (FormatException formexc)
         {
-            Toast.makeText(getApplicationContext(), dataFormat, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), dataFormat, Toast.LENGTH_LONG).show();
         }
 
         if(!this.ntagReader.disconnect())
         {
-            Toast.makeText(getApplicationContext(), errorDisconnect, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), errorDisconnect, Toast.LENGTH_LONG).show();
         }
     }
 

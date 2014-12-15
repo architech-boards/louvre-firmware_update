@@ -5,14 +5,25 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.lorenzo.louvrefirmapp.R;
+
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 
 /**
@@ -23,6 +34,7 @@ import com.example.lorenzo.louvrefirmapp.R;
 public class FirmwareUpdateFragment extends Fragment implements View.OnClickListener
 {
 
+    View    baseView;
     private OnTagInfoFragmentInterListener onTagInfoFragmentInterListener;
     private static final int PICKFILE_RESULT_CODE = 1000; // Id for file browser intent
 
@@ -47,22 +59,30 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true); // To notify of the presence of particular menu
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
+    {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.firmware_upload, menu);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_firmware_upload, container, false);
+        this.baseView = inflater.inflate(R.layout.fragment_firmware_upload, container, false);
 
-        Button bt_browse = (Button)v.findViewById(R.id.browse_button);
+        Button bt_browse = (Button)this.baseView.findViewById(R.id.browse_button);
         bt_browse.setOnClickListener(this);
 
-        return v;
+        return this.baseView;
     }
 
 
@@ -83,6 +103,93 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
     public void onDetach() {
         super.onDetach();
         onTagInfoFragmentInterListener = null;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch(item.getItemId())
+        {
+            case R.id.test_file: //TODO aggiornare inserendo nuovo test via internal storage
+                byte[] bytesRead = new byte[100];
+                if(testReadFileFromBrowsing(bytesRead))
+                {
+                    Log.d("File Reading From Browsing", new String(bytesRead));
+                }
+                else
+                {
+                    Log.d("Test read file", "File not read");
+                }
+                break;
+
+            default: return false;
+        }
+
+        return true;
+    }
+
+
+    /**
+     * Test the file reading capability.
+     * @param byteRead Bytes read from the file
+     * @return True if read successfully, otherwise false
+     */
+    private boolean testReadFileFromBrowsing(byte[] byteRead)
+    {
+        String notFoundErr = "File not found";
+        String readingErr = "Problem reading file";
+
+        TextView tw = (TextView) baseView.findViewById(R.id.et_filename);
+        if(tw.getText().length() == 0)
+        {
+            Toast.makeText(baseView.getContext(), "No file selected", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        try
+        {
+            String filePath = tw.getText().toString().split(":")[1];
+            FileInputStream fis = new FileInputStream(filePath);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+
+            bis.read(byteRead); // Read all the length of the buffer
+
+            return true;
+        }
+        catch (FileNotFoundException fexc)
+        {
+            Toast.makeText(baseView.getContext(), notFoundErr, Toast.LENGTH_SHORT).show();
+            Log.e("File Reading From Browsing", notFoundErr + " " + tw.getText().toString() , fexc);
+            return false;
+        }
+        catch(IOException ioexc)
+        {
+            Toast.makeText(baseView.getContext(), readingErr, Toast.LENGTH_SHORT).show();
+            Log.e("File Reading From Browsing", readingErr, ioexc);
+            return false;
+        }
+    }
+
+
+    /**
+     * Test the file reading capability.
+     * @param byteRead Bytes read from the file
+     * @return True if read successfully, otherwise false
+     */
+    private boolean testReadFileFromRaw(byte[] byteRead)
+    {
+        InputStream fis = getResources().openRawResource(R.raw.firmware);
+
+        try
+        {
+            fis.read(byteRead); // Read all the length of the buffer
+            return true;
+        }
+        catch(IOException ioexc)
+        {
+            Log.e("File Reading From Raw", "Read file error", ioexc);
+            return false;
+        }
     }
 
 
