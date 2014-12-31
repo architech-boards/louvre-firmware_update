@@ -5,7 +5,6 @@ import android.nfc.Tag;
 import android.nfc.tech.NfcA;
 import android.util.Log;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.BytesToWriteExceedMax;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.ReaderNotConnectedException;
@@ -206,13 +205,14 @@ public class Reader
         // ACK, which is sending NO REPLY for more than 1ms
         this.nfcA.setTimeout(1);
 
-        // Catch exception to handle passive ack
         try
         {
             transceive(command);
         }
         catch (IOException e)
-        { }
+        {
+            // Catch exception to handle passive ACK
+        }
 
         nfcA.setTimeout(600);
 
@@ -251,15 +251,15 @@ public class Reader
         Log.d("Write SRAM", "Found I2C_LOCKED set to 0 ...");
         textViewDebug.append("Found I2C_LOCKED set to 0 ...\n");
 
-        // Select sector 1 where SRAM buffer is mapped
-        selectSector(Addresses.Sector.SECTOR_1);
-        Log.d("Write SRAM", "Memory sector 1 selected");
-        textViewDebug.append("Memory sector 1 selected\n");
-
         // Handle multiple writing session
         sessions =  (int)Math.ceil(bytes.length / SRAM_BUFFER_SIZE);
         for(int currentSession = 0; currentSession < sessions; currentSession ++)
         {
+            // Select sector 1 where SRAM buffer is mapped
+            selectSector(Addresses.Sector.SECTOR_1);
+            Log.d("Write SRAM", "Memory sector 1 selected");
+            textViewDebug.append("Memory sector 1 selected\n");
+
             int startBlock = currentSession * SRAM_BUFFER_SIZE;
             int endBlock = startBlock + SRAM_BUFFER_SIZE;
             if(endBlock > bytes.length)
@@ -310,69 +310,22 @@ public class Reader
             textViewDebug.append("[Session " + (currentSession + 1) + " of " + sessions +
                     "] SRAM buffer written successfully\n");
 
-
+            // Print all BIT interested in the communication
             /*
-            // Wait for I2C_LOCKED
-            Log.d("Write SRAM", "Start waiting for I2C_LOCKED set to 0 ...");
-            while(get_NS_REG_sessField(Masks.NS_REG_Sess.I2C_LOCKED) == 1)
-            { }
-            Log.d("Write SRAM", "Found I2C_LOCKED set to 0 ...");
-
-
-            // Wait for SRAM_I2C_READY
-            Log.d("Write SRAM", "Start waiting for SRAM_I2C_READY set to 0 ...");
-            while(get_NS_REG_sessField(Masks.NS_REG_Sess.SRAM_I2C_READY) == 1)
-            { }
-            Log.d("Write SRAM", "Found SRAM_I2C_READY set to 0 ...");
-
-
-            // Wait for SRAM_RF_READY
-            Log.d("Write SRAM", "Start waiting for SRAM_RF_READY set to 0 ...");
-            while(get_NS_REG_sessField(Masks.NS_REG_Sess.SRAM_RF_READY) == 1)
-            { }
-            Log.d("Write SRAM", "Found SRAM_RF_READY set to 0 ...");
-
-
-            // Wait for RF_FIELD_PRESENT
-            Log.d("Write SRAM", "Start waiting for RF_FIELD_PRESENT set to 1 ...");
-            while(get_NS_REG_sessField(Masks.NS_REG_Sess.RF_FIELD_PRESENT) == 0)
-            { }
-            Log.d("Write SRAM", "Found RF_FIELD_PRESENT set to 1 ...");
-
-
-            // Wait for I2C_RST_ON_OFF
-            Log.d("Write SRAM", "Start waiting for I2C_RST_ON_OFF set to 0 ...");
-            while(get_NC_REG_sessField(Masks.NC_REG_Sess.I2C_RST_ON_OFF) == 1)
-            { }
-            Log.d("Write SRAM", "Found I2C_RST_ON_OFF set to 0 ...");
-
-
-            // Wait for PTHRU_ON_OFF
-            Log.d("Write SRAM", "Start waiting for PTHRU_ON_OFF set to 1 ...");
-            while(get_NC_REG_sessField(Masks.NC_REG_Sess.PTHRU_ON_OFF) == 0)
-            { }
-            Log.d("Write SRAM", "Found PTHRU_ON_OFF set to 1 ...");
-
-
-            // Wait for FD_ON
-            Log.d("Write SRAM", "Start waiting for FD_ON set to 1 ...");
-            while(get_NC_REG_sessField(Masks.NC_REG_Sess.FD_ON) == 0)
-            { }
-            Log.d("Write SRAM", "Found FD_ON set to 1 ...");
-
-
-            // Wait for FD_OFF
-            Log.d("Write SRAM", "Start waiting for FD_OFF set to 1 ...");
-            while(get_NC_REG_sessField(Masks.NC_REG_Sess.FD_OFF) == 0)
-            { }
-            Log.d("Write SRAM", "Found FD_OFF set to 1 ...");
-
-
-            // Wait for PTHRU_DIR
-            Log.d("Write SRAM", "Start waiting for PTHRU_DIR set to 1 ...");
-            while(get_NC_REG_sessField(Masks.NC_REG_Sess.PTHRU_DIR) == 0)
-            { }
-            Log.d("Write SRAM", "Found PTHRU_DIR set to 1 ...");
+            textViewDebug.append("\n");
+            textViewDebug.append("I2C_LOCKED= " + Byte.toString(get_NS_REG_sessField(Masks.NS_REG_Sess.I2C_LOCKED)) + "\n");
+            textViewDebug.append("RF_LOCKED= " + Byte.toString(get_NS_REG_sessField(Masks.NS_REG_Sess.RF_LOCKED)) + "\n");
+            textViewDebug.append("SRAM_I2C_LOCKED= " + Byte.toString(get_NS_REG_sessField(Masks.NS_REG_Sess.SRAM_I2C_READY)) + "\n");
+            textViewDebug.append("SRAM_RF_READY= " + Byte.toString(get_NS_REG_sessField(Masks.NS_REG_Sess.SRAM_RF_READY)) + "\n");
+            textViewDebug.append("EEPROM_WR_ERR= " + Byte.toString(get_NS_REG_sessField(Masks.NS_REG_Sess.EEPROM_WR_ERR)) + "\n");
+            textViewDebug.append("EEPROM_WR_BUSY= " + Byte.toString(get_NS_REG_sessField(Masks.NS_REG_Sess.EEPROM_WR_BUSY)) + "\n");
+            textViewDebug.append("RF_FIELD_PRESENT= " + Byte.toString(get_NS_REG_sessField(Masks.NS_REG_Sess.RF_FIELD_PRESENT)) + "\n");
+            textViewDebug.append("I2C_RST_ON_OFF= " + Byte.toString(get_NC_REG_sessField(Masks.NC_REG_Sess.I2C_RST_ON_OFF)) + "\n");
+            textViewDebug.append("PTHRU_DIR= " + Byte.toString(get_NC_REG_sessField(Masks.NC_REG_Sess.PTHRU_ON_OFF)) + "\n");
+            textViewDebug.append("FD_ON= " + Byte.toString(get_NC_REG_sessField(Masks.NC_REG_Sess.FD_ON)) + "\n");
+            textViewDebug.append("FD_OFF=" + Byte.toString(get_NC_REG_sessField(Masks.NC_REG_Sess.FD_OFF)) + "\n");
+            textViewDebug.append("SRAM_MIRROR_ON_OFF= " + Byte.toString(get_NC_REG_sessField(Masks.NC_REG_Sess.SRAM_MIRROR_ON_OFF)) + "\n");
+            textViewDebug.append("PTHRU_DIR= " + Byte.toString(get_NC_REG_sessField(Masks.NC_REG_Sess.PTHRU_DIR)) + "\n");
             */
         }
 
@@ -458,7 +411,6 @@ public class Reader
 
 
     /**
-     * @return session register byte requested
      * @throws IOException
      * @throws ReaderNotConnectedException
      */

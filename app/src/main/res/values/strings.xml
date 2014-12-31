@@ -8,7 +8,8 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
-    <string name="action_test_file">Test Fie</string>
+    <string name="action_test_file_browser">Test file from browse</string>
+    <string name="action_test_file_raw">Test file from raw</string>
     <string name="button_scan_tag_text"><b>Scan NTAG</b></string>
     <string name="lb_tag_info">Scanned TAG info</string>
     <string name="lb_tag_info_text"> </string>

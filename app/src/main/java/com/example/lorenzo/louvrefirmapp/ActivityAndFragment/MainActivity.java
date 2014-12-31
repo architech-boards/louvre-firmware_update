@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
-import android.view.View;
 import android.widget.TextView;
 import android.nfc.NfcAdapter;
 import android.widget.Toast;
@@ -28,8 +27,8 @@ import com.example.lorenzo.louvrefirmapp.R;
 import com.example.lorenzo.louvrefirmapp.RegistersListview.RegisterItems;
 
 import java.io.IOException;
-import java.util.FormatFlagsConversionMismatchException;
 
+//todo eseguire il trasfermineto del firm in thread secondario per poter gestire liberamente messaggi dinamici sulla GUI
 //TODO sistemare codice pulendo commmenti e eliminando riferimenti non utilizzati
 
 public class MainActivity extends Activity
@@ -46,7 +45,8 @@ public class MainActivity extends Activity
      */
     private NavigationDrawerFragment mNavigationDrawerFragment;
 
-    TagRegistersFragment tagRegistersFragment;
+    TagRegistersFragment    tagRegistersFragment;
+    FirmwareUpdateFragment  firmwareUpdateFragment;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -102,7 +102,7 @@ public class MainActivity extends Activity
      * Called when activity is in foreground and a NTAG is scanned due to foreground dispatch
      * implementation
      *
-     * @param intent
+     * @param intent intent with tag information to handle retrieved
      */
     @Override
     public void onNewIntent(Intent intent){
@@ -143,8 +143,9 @@ public class MainActivity extends Activity
 
             case 1:
             {
+                this.firmwareUpdateFragment = FirmwareUpdateFragment.newInstance();
                 fragmentManager.beginTransaction().replace(R.id.container,
-                        FirmwareUpdateFragment.newInstance()).commit();
+                        firmwareUpdateFragment).commit();
                 break;
             }
         }
@@ -253,6 +254,8 @@ public class MainActivity extends Activity
         String dataToLong =         "Data to write is over 64 bytes";
         String dataFormat =         "Data format exception";
 
+        TextView debugView = (TextView)findViewById(R.id.tv_debug);
+
         // Check if a tag was scanned
         if(this.ntagReader == null)
         {
@@ -270,7 +273,7 @@ public class MainActivity extends Activity
         // Communicate with the tag writing to SRAM and close the communication at the end
         try
         {
-            byte[] fakeData = new byte[320]; // 5 write operation required
+            byte[] fakeData = new byte[1000000]; // Multi write operation required
             byte fakeValue = 1;
             for(int i = 0; i < fakeData.length; i++)
             {
@@ -280,33 +283,41 @@ public class MainActivity extends Activity
                 }
                 fakeData[i] = fakeValue;
             }
-            ntagReader.writeSRAM(fakeData); // Write fake data to SRAM
-            Toast.makeText(getApplicationContext(), "SRAM written", Toast.LENGTH_LONG).show();
+
+            ntagReader.writeSRAM(fakeData, debugView); // Write fake data to SRAM
+            Toast.makeText(getApplicationContext(), "SRAM written successfully", Toast.LENGTH_LONG).show();
         }
         catch (IOException ioexc)
         {
             Toast.makeText(getApplicationContext(), errorWrite, Toast.LENGTH_LONG).show();
+            Log.e("writeFakeDataToSRAM", errorWrite, ioexc);
+            debugView.append(ioexc.toString());
         }
         catch(IndexOutOfBoundsException iobexc)
         {
             Toast.makeText(getApplicationContext(), errorAddress, Toast.LENGTH_LONG).show();
+            Log.e("writeFakeDataToSRAM", errorAddress, iobexc);
         }
         catch (ReaderNotConnectedException rncexc)
         {
             Toast.makeText(getApplicationContext(), notConnected, Toast.LENGTH_LONG).show();
+            Log.e("writeFakeDataToSRAM", notConnected, rncexc);
         }
         catch (BytesToWriteExceedMax bmax)
         {
             Toast.makeText(getApplicationContext(), dataToLong, Toast.LENGTH_LONG).show();
+            Log.e("writeFakeDataToSRAM", dataToLong, bmax);
         }
         catch (FormatException formexc)
         {
             Toast.makeText(getApplicationContext(), dataFormat, Toast.LENGTH_LONG).show();
+            Log.e("writeFakeDataToSRAM", dataFormat, formexc);
         }
 
         if(!this.ntagReader.disconnect())
         {
             Toast.makeText(getApplicationContext(), errorDisconnect, Toast.LENGTH_LONG).show();
+            Log.e("writeFakeDataToSRAM", errorDisconnect);
         }
     }
 
@@ -354,10 +365,8 @@ public class MainActivity extends Activity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+
+        return id==R.id.action_settings || super.onOptionsItemSelected(item);
     }
 
 

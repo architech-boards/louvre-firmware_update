@@ -6,11 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 
- // TODO sistemare javadoc
 public class RegisterItems
 {
-    List<Item> ItemsList = new ArrayList<Item>();
-    Map<String, Item> ItemsMap = new HashMap<String, Item>();
+    List<Item> ItemsList = new ArrayList<>();
+    Map<String, Item> ItemsMap = new HashMap<>();
 
 
     public List<Item> getItemsList()
@@ -24,7 +23,8 @@ public class RegisterItems
     }
 
 
-    public void addItem(Item item) {
+    public void addItem(Item item)
+    {
         ItemsList.add(item);
         ItemsMap.put(item.id, item);
     }

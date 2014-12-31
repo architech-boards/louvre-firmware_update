@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 
+//todo GUI - prevedere testi di instuzione dinamici per eseguire l'update ("avvicinare il device", "non mouvere il device" etc...)
 /**
  * Activities that contain this fragment must implement the
  * {@link FirmwareUpdateFragment.OnTagInfoFragmentInterListener} interface
@@ -79,6 +80,7 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
         // Inflate the layout for this fragment
         this.baseView = inflater.inflate(R.layout.fragment_firmware_upload, container, false);
 
+        // Set fragment buttons click listeners
         Button bt_browse = (Button)this.baseView.findViewById(R.id.browse_button);
         bt_browse.setOnClickListener(this);
 
@@ -109,19 +111,39 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
+        byte[] bytesRead;
+
         switch(item.getItemId())
         {
-            case R.id.test_file: //TODO aggiornare inserendo nuovo test via internal storage
-                byte[] bytesRead = new byte[100];
-                if(testReadFileFromBrowsing(bytesRead))
+            // Read file test from browse string
+            case R.id.test_file_browser:
+            {
+                bytesRead = new byte[100];
+                if (testReadFileFromBrowsing(bytesRead))
                 {
-                    Log.d("File Reading From Browsing", new String(bytesRead));
+                    Log.d("Test read file from browse", "File content:\n" + new String(bytesRead).trim());
                 }
                 else
                 {
-                    Log.d("Test read file", "File not read");
+                    Log.d("Test read file from browse", "File not read");
                 }
                 break;
+            }
+
+            // Read file test from raw resources
+            case R.id.test_file_raw:
+            {
+                bytesRead = new byte[100];
+                if (testReadFileFromRaw(bytesRead))
+                {
+                    Log.d("Test read file from raw", "File content:\n" + new String(bytesRead).trim());
+                }
+                else
+                {
+                    Log.d("Test read file from raw", "File not read");
+                }
+                break;
+            }
 
             default: return false;
         }

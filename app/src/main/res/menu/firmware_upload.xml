@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:id="@+id/test_file"
-          android:title="@string/action_test_file"
+    <item android:id="@+id/test_file_browser"
+          android:title="@string/action_test_file_browser"
+          android:orderInCategory="100"
+          android:showAsAction="never" />
+
+    <item android:id="@+id/test_file_raw"
+          android:title="@string/action_test_file_raw"
           android:orderInCategory="100"
           android:showAsAction="never" />
 </menu>
