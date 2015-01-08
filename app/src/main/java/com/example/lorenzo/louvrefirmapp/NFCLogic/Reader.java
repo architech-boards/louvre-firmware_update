@@ -255,11 +255,6 @@ public class Reader
         sessions =  (int)Math.ceil(bytes.length / SRAM_BUFFER_SIZE);
         for(int currentSession = 0; currentSession < sessions; currentSession ++)
         {
-            // Select sector 1 where SRAM buffer is mapped
-            selectSector(Addresses.Sector.SECTOR_1);
-            Log.d("Write SRAM", "Memory sector 1 selected");
-            textViewDebug.append("Memory sector 1 selected\n");
-
             int startBlock = currentSession * SRAM_BUFFER_SIZE;
             int endBlock = startBlock + SRAM_BUFFER_SIZE;
             if(endBlock > bytes.length)
@@ -289,6 +284,11 @@ public class Reader
                         pageBuffer[j] = (byte) 0x00;
                     }
                 }
+
+                // Select sector 1 where SRAM buffer is mapped
+                selectSector(Addresses.Sector.SECTOR_1);
+                Log.d("Write SRAM", "Memory sector 1 selected");
+                textViewDebug.append("Memory sector 1 selected\n");
 
                 byte blockAddress = (byte)(Addresses.Registers.SRAM_BEGIN.getValue() + i);
                 Log.d("Write SRAM", "[Session " + (currentSession + 1) + " of " + sessions +

@@ -1,6 +1,7 @@
 <component name="ProjectDictionaryState">
   <dictionary name="Lorenzo">
     <words>
+      <w>bootloader</w>
       <w>eeprom</w>
       <w>ndef</w>
       <w>ntag</w>
@@ -8,6 +9,7 @@
       <w>pickfile</w>
       <w>pthru</w>
       <w>sess</w>
+      <w>simul</w>
       <w>sram</w>
       <w>transceive</w>
     </words>

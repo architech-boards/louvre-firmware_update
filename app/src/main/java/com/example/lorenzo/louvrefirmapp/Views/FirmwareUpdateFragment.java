@@ -1,4 +1,4 @@
-package com.example.lorenzo.louvrefirmapp.ActivityAndFragment;
+package com.example.lorenzo.louvrefirmapp.Views;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -17,6 +17,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.lorenzo.louvrefirmapp.FirmwareFileLogic.Exc.FirmwareRecCreationExc;
+import com.example.lorenzo.louvrefirmapp.FirmwareFileLogic.Exc.HexRecordParsingExc;
+import com.example.lorenzo.louvrefirmapp.FirmwareFileLogic.HexFile;
 import com.example.lorenzo.louvrefirmapp.R;
 
 import java.io.BufferedInputStream;
@@ -200,16 +203,25 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
      */
     private boolean testReadFileFromRaw(byte[] byteRead)
     {
-        InputStream fis = getResources().openRawResource(R.raw.firmware);
-
         try
         {
-            fis.read(byteRead); // Read all the length of the buffer
+            HexFile hexFile = new HexFile(getResources());
+            hexFile.readFromRaw();
             return true;
         }
         catch(IOException ioexc)
         {
             Log.e("File Reading From Raw", "Read file error", ioexc);
+            return false;
+        }
+        catch (HexRecordParsingExc pe)
+        {
+            Log.e("File Reading From Raw", "Read file error: .hex parsing error", pe);
+            return false;
+        }
+        catch (FirmwareRecCreationExc fe)
+        {
+            Log.e("File Reading From Raw", "File pre-processing error: failed to create firmware records", fe);
             return false;
         }
     }

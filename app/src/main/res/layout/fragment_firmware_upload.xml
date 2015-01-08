@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.lorenzo.louvrefirmapp.ActivityAndFragment.FirmwareUpdateFragment"
+    tools:context="com.example.lorenzo.louvrefirmapp.Views.FirmwareUpdateFragment"
     android:orientation="vertical"
     android:layout_margin="15sp">
 

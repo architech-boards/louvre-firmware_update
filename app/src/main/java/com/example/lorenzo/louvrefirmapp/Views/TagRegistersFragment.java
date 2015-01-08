@@ -1,4 +1,4 @@
-package com.example.lorenzo.louvrefirmapp.ActivityAndFragment;
+package com.example.lorenzo.louvrefirmapp.Views;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -13,8 +13,8 @@ import android.widget.TextView;
 
 
 import com.example.lorenzo.louvrefirmapp.R;
-import com.example.lorenzo.louvrefirmapp.RegistersListview.RegisterItems;
-import com.example.lorenzo.louvrefirmapp.RegistersListview.RegisterListAdapter;
+import com.example.lorenzo.louvrefirmapp.Views.RegistersListview.RegisterItems;
+import com.example.lorenzo.louvrefirmapp.Views.RegistersListview.RegisterListAdapter;
 
 /**
  * A fragment representing a list of Items.

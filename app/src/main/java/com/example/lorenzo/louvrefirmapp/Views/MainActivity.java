@@ -1,4 +1,4 @@
-package com.example.lorenzo.louvrefirmapp.ActivityAndFragment;
+package com.example.lorenzo.louvrefirmapp.Views;
 
 import android.app.Activity;
 
@@ -19,12 +19,13 @@ import android.widget.TextView;
 import android.nfc.NfcAdapter;
 import android.widget.Toast;
 
+import com.example.lorenzo.louvrefirmapp.FirmwareFileLogic.HexFile;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.BytesToWriteExceedMax;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Masks;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Reader;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.ReaderNotConnectedException;
 import com.example.lorenzo.louvrefirmapp.R;
-import com.example.lorenzo.louvrefirmapp.RegistersListview.RegisterItems;
+import com.example.lorenzo.louvrefirmapp.Views.RegistersListview.RegisterItems;
 
 import java.io.IOException;
 
@@ -79,6 +80,17 @@ public class MainActivity extends Activity
         IntentFilter ntech = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
         mFilters = new IntentFilter[] {ntech};
         mTechLists = new String[][] { new String[] { NfcA.class.getName() } };
+
+        // Load the .hex firmware file in memory
+        try
+        {
+            HexFile hexFile = new HexFile(getResources());
+            hexFile.readFromRaw();
+        }
+        catch (Exception exc)
+        {
+            Toast.makeText(getApplicationContext(), "Failed to load Firmware file", Toast.LENGTH_LONG);
+        }
     }
 
     @Override
@@ -114,14 +126,14 @@ public class MainActivity extends Activity
         // Switch the page displayed to find the operation to perform on the tag
         switch(this.mNavigationDrawerFragment.getCurrentSelectedPosition())
         {
-            // Tag info fragment
+            // Firmware upload fragment
             case 0:
-                readTagRegisters();
+                writeFakeDataToSRAM();
                 break;
 
-            // Firmware upload fragment
+            // Tag info fragment
             case 1:
-                writeFakeDataToSRAM();
+                readTagRegisters();
                 break;
         }
     }
@@ -135,17 +147,17 @@ public class MainActivity extends Activity
         {
             case 0:
             {
-                this.tagRegistersFragment = TagRegistersFragment.newInstance();
+                this.firmwareUpdateFragment = FirmwareUpdateFragment.newInstance();
                 fragmentManager.beginTransaction().replace(R.id.container,
-                        tagRegistersFragment).commit();
+                        firmwareUpdateFragment).commit();
                 break;
             }
 
             case 1:
             {
-                this.firmwareUpdateFragment = FirmwareUpdateFragment.newInstance();
+                this.tagRegistersFragment = TagRegistersFragment.newInstance();
                 fragmentManager.beginTransaction().replace(R.id.container,
-                        firmwareUpdateFragment).commit();
+                        tagRegistersFragment).commit();
                 break;
             }
         }
@@ -327,12 +339,12 @@ public class MainActivity extends Activity
         switch (number) {
             case 1:
             {
-                mTitle = getString(R.string.title_get_tag_info);
+                mTitle = getString(R.string.title_upload_firmware);
                 break;
             }
             case 2:
             {
-                mTitle = getString(R.string.title_upload_firmware);
+                mTitle = getString(R.string.title_get_tag_info);
                 break;
             }
         }
