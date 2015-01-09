@@ -152,6 +152,13 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
                 break;
             }
 
+            // Test functionality of report progress via progressbar
+            case R.id.test_progressbar:
+            {
+                onTagInfoFragmentInterListener.onTestProgressbar();
+                break;
+            }
+
             default: return false;
         }
 
@@ -298,6 +305,8 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
     public interface OnTagInfoFragmentInterListener
     {
         public void onScanTagClick();
+
+        public void onTestProgressbar();
     }
 
 }

@@ -15,6 +15,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.nfc.NfcAdapter;
 import android.widget.Toast;
@@ -34,11 +37,12 @@ import java.io.IOException;
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
                    TagRegistersFragment.OnFragmentInteractionListener,
-                   FirmwareUpdateFragment.OnTagInfoFragmentInterListener
+                   FirmwareUpdateFragment.OnTagInfoFragmentInterListener,
+                   Reader.WritingReportProgressCallbacks
 {
 
-    transient Reader ntagReader;
-    HexFile hexFile;
+    transient Reader        ntagReader;
+    HexFile                 hexFile;
 
 
     /**
@@ -106,7 +110,7 @@ public class MainActivity extends Activity
         {
             Tag discoveredTag = getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
 
-            this.ntagReader = new Reader(discoveredTag);
+            this.ntagReader = new Reader(discoveredTag, this);
         }
     }
 
@@ -122,7 +126,7 @@ public class MainActivity extends Activity
 
         // Fetch the tag from the intent and create the reader object
         Tag discoveredTag = (Tag)intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        this.ntagReader = new Reader(discoveredTag);
+        this.ntagReader = new Reader(discoveredTag, this);
 
         // Switch the page displayed to find the operation to perform on the tag
         switch(this.mNavigationDrawerFragment.getCurrentSelectedPosition())
@@ -381,9 +385,70 @@ public class MainActivity extends Activity
 
 
     @Override
+    public void onSramBufferWrote(final int currentSession, final int sessions)
+    {
+        ProgressBar writingProgressBar = (ProgressBar)findViewById(R.id.writing_progressbar);
+
+        // Update progress value via UI Thread
+        writingProgressBar.post(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                // Setup the progress bar and its parent layout for the first time
+                LinearLayout progressbarLayout = (LinearLayout)findViewById(R.id.progressbar_layout);
+                ProgressBar writingProgressBar = (ProgressBar)findViewById(R.id.writing_progressbar);
+
+                if(progressbarLayout.getVisibility() == View.GONE)
+                {
+                    progressbarLayout.setVisibility(View.VISIBLE);
+                    writingProgressBar.setMax(sessions-1);
+                }
+
+                // Check for end of writing operation
+                if(currentSession >= sessions-1)
+                {
+                    progressbarLayout.setVisibility(View.GONE);
+                    writingProgressBar.setProgress(0);
+                }
+                else
+                {
+                    writingProgressBar.setProgress(currentSession);
+                }
+            }
+        });
+    }
+
+
+    @Override
     public void onScanTagClick()
     {
         readTagRegisters();
+    }
+
+    @Override
+    public void onTestProgressbar()
+    {
+        // Simulate progress reporting from a different thread
+        new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                int maxSession = 211;
+                for(int i = 0; i < maxSession; i++)
+                {
+                    onSramBufferWrote(i, maxSession);
+                    try
+                    {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
     }
 
     @Override

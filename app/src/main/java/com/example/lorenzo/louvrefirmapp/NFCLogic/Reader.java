@@ -10,11 +10,23 @@ import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.BytesToWriteExceedMax;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.ReaderNotConnectedException;
 
 import java.io.IOException;
+import java.io.WriteAbortedException;
 import java.util.Arrays;
 
 
 public class Reader
 {
+    /**
+     * Callbacks interface that activity wanting to track writing progress must implement.
+     */
+    public static interface WritingReportProgressCallbacks
+    {
+        void onSramBufferWrote(int currentSession, int sessions);
+    }
+
+    WritingReportProgressCallbacks writingReportProgressCallbacks;
+
+
     NfcA                nfcA;
     byte[]              command;
     byte[]              answer;
@@ -52,10 +64,11 @@ public class Reader
      * tag
      * @param tag Tag object that has to be read or written
      */
-    public Reader(Tag tag)
+    public Reader(Tag tag, WritingReportProgressCallbacks wrCallback)
     {
         this.nfcA = NfcA.get(tag);
         this.currentSector = Addresses.Sector.SECTOR_0;
+        this.writingReportProgressCallbacks = wrCallback;
     }
 
 
@@ -227,6 +240,7 @@ public class Reader
      * @throws IOException
      * @throws android.nfc.FormatException
      */
+    //TODO scrittura in thread separato (vedi MainActivity.onTestProgressbar)
     public void writeSRAM(byte[] bytes, TextView textViewDebug) throws IOException, FormatException, BytesToWriteExceedMax,
                                                ReaderNotConnectedException
     {
@@ -309,6 +323,8 @@ public class Reader
                     "] SRAM buffer written successfully");
             textViewDebug.append("[Session " + (currentSession + 1) + " of " + sessions +
                     "] SRAM buffer written successfully\n");
+
+            writingReportProgressCallbacks.onSramBufferWrote(currentSession, sessions);
 
             // Print all BIT interested in the communication
             /*

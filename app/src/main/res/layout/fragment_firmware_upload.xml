@@ -21,26 +21,58 @@
                 android:gravity="center"
                 android:textStyle="bold"
                 android:textSize="@dimen/default_header_text_size"/>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv_info"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Firmware Version: demo"
-                android:layout_below="@+id/tv_info"
-                android:textSize="@dimen/default_header_text_size"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="20dp"/>
+                android:text="@string/firmware_version_text"
+                android:textSize="@dimen/default_header_text_size"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/default_margin_left"
+                android:layout_marginStart="@dimen/default_margin_left"
+                android:text="demo"
+                android:textSize="@dimen/default_header_text_size"/>
+        </LinearLayout>
     </RelativeLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
+            <LinearLayout
+                android:id="@+id/progressbar_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_centerHorizontal="true"
+                android:visibility="gone">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/default_info_text_size"
+                        android:text="@string/progress_bar_label"
+                        android:layout_gravity="center"/>
+                    <ProgressBar
+                        android:id="@+id/writing_progressbar"
+                        android:layout_width="match_parent"
+                        android:layout_height="12dp"
+                        style="@android:style/Widget.ProgressBar.Horizontal"
+                        android:layout_margin="@dimen/activity_horizontal_margin"/>
+            </LinearLayout>
             <ScrollView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:scrollbars="vertical"
                 android:layout_margin="5dp"
-                android:fillViewport="true">
+                android:fillViewport="true"
+                android:layout_below="@id/progressbar_layout">
                 <TextView
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"

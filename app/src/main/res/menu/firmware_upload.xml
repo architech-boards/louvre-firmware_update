@@ -10,4 +10,9 @@
           android:title="@string/action_test_file_raw"
           android:orderInCategory="100"
           android:showAsAction="never" />
+
+    <item android:id="@+id/test_progressbar"
+          android:title="@string/action_test_progressbar"
+          android:orderInCategory="100"
+          android:showAsAction="never" />
 </menu>
