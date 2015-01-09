@@ -84,8 +84,10 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
         this.baseView = inflater.inflate(R.layout.fragment_firmware_upload, container, false);
 
         // Set fragment buttons click listeners
+        /*
         Button bt_browse = (Button)this.baseView.findViewById(R.id.browse_button);
         bt_browse.setOnClickListener(this);
+        */
 
         return this.baseView;
     }
@@ -121,6 +123,7 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
             // Read file test from browse string
             case R.id.test_file_browser:
             {
+                /*
                 bytesRead = new byte[100];
                 if (testReadFileFromBrowsing(bytesRead))
                 {
@@ -131,6 +134,7 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
                     Log.d("Test read file from browse", "File not read");
                 }
                 break;
+                */
             }
 
             // Read file test from raw resources
@@ -160,6 +164,7 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
      * @param byteRead Bytes read from the file
      * @return True if read successfully, otherwise false
      */
+    /*
     private boolean testReadFileFromBrowsing(byte[] byteRead)
     {
         String notFoundErr = "File not found";
@@ -194,6 +199,7 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
             return false;
         }
     }
+    */
 
 
     /**
@@ -232,10 +238,12 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
     {
         switch (v.getId())
         {
+            /*
             case R.id.browse_button :
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("file/*");
                 startActivityForResult(intent,PICKFILE_RESULT_CODE);
+            */
         }
     }
 
@@ -252,11 +260,13 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
         // Check which request we're responding to
         switch(requestCode)
         {
+            /*
             case PICKFILE_RESULT_CODE:
                 Uri selectedFile = data.getData();
                 EditText et = (EditText)getActivity().findViewById(R.id.et_filename);
                 et.setText(selectedFile.toString());
                 break;
+            */
         }
     }
 
@@ -266,11 +276,13 @@ public class FirmwareUpdateFragment extends Fragment implements View.OnClickList
      * @return
      * File path
      */
+    /*
     public String getBrowsedFilePath()
     {
         EditText et = (EditText)getActivity().findViewById(R.id.et_filename);
         return et.getText().toString();
     }
+    */
 
 
     /**

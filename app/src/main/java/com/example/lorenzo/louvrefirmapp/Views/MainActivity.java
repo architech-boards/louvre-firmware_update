@@ -29,7 +29,6 @@ import com.example.lorenzo.louvrefirmapp.Views.RegistersListview.RegisterItems;
 
 import java.io.IOException;
 
-//todo eseguire il trasfermineto del firm in thread secondario per poter gestire liberamente messaggi dinamici sulla GUI
 //TODO sistemare codice pulendo commmenti e eliminando riferimenti non utilizzati
 
 public class MainActivity extends Activity
@@ -39,6 +38,7 @@ public class MainActivity extends Activity
 {
 
     transient Reader ntagReader;
+    HexFile hexFile;
 
 
     /**
@@ -84,12 +84,13 @@ public class MainActivity extends Activity
         // Load the .hex firmware file in memory
         try
         {
-            HexFile hexFile = new HexFile(getResources());
+            this.hexFile = new HexFile(getResources());
             hexFile.readFromRaw();
         }
         catch (Exception exc)
         {
-            Toast.makeText(getApplicationContext(), "Failed to load Firmware file", Toast.LENGTH_LONG);
+            hexFile = null;
+            Toast.makeText(getApplicationContext(), "Failed to load Firmware file", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -128,7 +129,15 @@ public class MainActivity extends Activity
         {
             // Firmware upload fragment
             case 0:
-                writeFakeDataToSRAM();
+                if(hexFile != null)
+                {
+                    //TODO avviare scrittura in background visualizzando i progrssi sulla GUI
+                    writeFirmwareFileToSRAM();
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "No .hex file loaded successfully", Toast.LENGTH_LONG).show();
+                }
                 break;
 
             // Tag info fragment
@@ -255,7 +264,7 @@ public class MainActivity extends Activity
     }
 
 
-    private void writeFakeDataToSRAM()
+    private void writeFirmwareFileToSRAM()
     {
         String errorNoTag =         "No tag scanned";
         String errorConnect =       "Failed to connect to the tag";
@@ -285,51 +294,40 @@ public class MainActivity extends Activity
         // Communicate with the tag writing to SRAM and close the communication at the end
         try
         {
-            byte[] fakeData = new byte[1000000]; // Multi write operation required
-            byte fakeValue = 1;
-            for(int i = 0; i < fakeData.length; i++)
-            {
-                if((i % 64) == 0)
-                {
-                    fakeValue ++;
-                }
-                fakeData[i] = fakeValue;
-            }
-
-            ntagReader.writeSRAM(fakeData, debugView); // Write fake data to SRAM
+            ntagReader.writeSRAM(hexFile.getFirmwareRecordsMapBytes(), debugView); // Write data to SRAM
             Toast.makeText(getApplicationContext(), "SRAM written successfully", Toast.LENGTH_LONG).show();
         }
         catch (IOException ioexc)
         {
             Toast.makeText(getApplicationContext(), errorWrite, Toast.LENGTH_LONG).show();
-            Log.e("writeFakeDataToSRAM", errorWrite, ioexc);
+            Log.e("writeFirmwareFileToSRAM", errorWrite, ioexc);
             debugView.append(ioexc.toString());
         }
         catch(IndexOutOfBoundsException iobexc)
         {
             Toast.makeText(getApplicationContext(), errorAddress, Toast.LENGTH_LONG).show();
-            Log.e("writeFakeDataToSRAM", errorAddress, iobexc);
+            Log.e("writeFirmwareFileToSRAM", errorAddress, iobexc);
         }
         catch (ReaderNotConnectedException rncexc)
         {
             Toast.makeText(getApplicationContext(), notConnected, Toast.LENGTH_LONG).show();
-            Log.e("writeFakeDataToSRAM", notConnected, rncexc);
+            Log.e("writeFirmwareFileToSRAM", notConnected, rncexc);
         }
         catch (BytesToWriteExceedMax bmax)
         {
             Toast.makeText(getApplicationContext(), dataToLong, Toast.LENGTH_LONG).show();
-            Log.e("writeFakeDataToSRAM", dataToLong, bmax);
+            Log.e("writeFirmwareFileToSRAM", dataToLong, bmax);
         }
         catch (FormatException formexc)
         {
             Toast.makeText(getApplicationContext(), dataFormat, Toast.LENGTH_LONG).show();
-            Log.e("writeFakeDataToSRAM", dataFormat, formexc);
+            Log.e("writeFirmwareFileToSRAM", dataFormat, formexc);
         }
 
         if(!this.ntagReader.disconnect())
         {
             Toast.makeText(getApplicationContext(), errorDisconnect, Toast.LENGTH_LONG).show();
-            Log.e("writeFakeDataToSRAM", errorDisconnect);
+            Log.e("writeFirmwareFileToSRAM", errorDisconnect);
         }
     }
 

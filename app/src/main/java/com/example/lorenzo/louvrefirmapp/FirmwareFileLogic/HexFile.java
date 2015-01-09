@@ -24,9 +24,17 @@ import java.util.TreeMap;
 //TODO validare endianess "tempAddress"
 public class HexFile
 {
+    private static final int RECORD_DATA_COUNT = 58; // How many record to include in firmwareRecord data field
+
     Resources                               activityResources;    // To handle file IO
     ArrayList<HexFileRecord>                hexFileRecordsList;
     TreeMap<Integer, FirmwareFileRecord>    firmwareRecordsMap;
+
+
+    public TreeMap<Integer, FirmwareFileRecord> getFirmwareRecordsMap()
+    {
+        return firmwareRecordsMap;
+    }
 
 
     public HexFile(Resources resources)
@@ -122,10 +130,10 @@ public class HexFile
                     break;
                 }
 
-                // Take 56 valid bytes from array
+                // Take RECORD_DATA_COUNT valid bytes from array
                 int recordAddress = i;
-                short[] recordData = new short[56];
-                for(int j = 0; j < 56 && i < flashSimul.length; j++ )
+                short[] recordData = new short[RECORD_DATA_COUNT];
+                for(int j = 0; j < RECORD_DATA_COUNT && i < flashSimul.length; j++ )
                 {
                     recordData[j] = flashSimul[i];
                     i++;
@@ -148,22 +156,35 @@ public class HexFile
             // Set last record type of the last record in the map
             firmwareRecordsMap.lastEntry().getValue().command =
                     FirmwareFileRecord.CommandsType.LAST_BOOTLOADER_RECORD.getValue();
-
-
-            // Debug //////////////
-            Log.i("toBytesArray DATA", Arrays.toString(Arrays.copyOfRange(flashSimul, 0, 110)));
-            for(Map.Entry entry : firmwareRecordsMap.entrySet())
-            {
-                FirmwareFileRecord fr = (FirmwareFileRecord)entry.getValue();
-                Log.i("toBytesArray RECORD", Arrays.toString(fr.toBytesArray()));
-            }
-            //////////////////////
-
         }
         catch (Exception exc)
         {
             throw new FirmwareRecCreationExc("Error creating firmware record", exc);
         }
+    }
+
+
+    public byte[] getFirmwareRecordsMapBytes()
+    {
+        byte[] combinedArrays = new byte[0];
+        for(Map.Entry entry : firmwareRecordsMap.entrySet())
+        {
+            FirmwareFileRecord fr = (FirmwareFileRecord)entry.getValue();
+            combinedArrays = concat(combinedArrays, fr.toBytesArray());
+        }
+
+        return combinedArrays;
+    }
+
+    //TODO sistemare javadoc e valutare a fondo la soluzione
+    public byte[] concat(byte[] a, byte[] b)
+    {
+        int aLen = a.length;
+        int bLen = b.length;
+        byte[] c= new byte[aLen+bLen];
+        System.arraycopy(a, 0, c, 0, aLen);
+        System.arraycopy(b, 0, c, aLen, bLen);
+        return c;
     }
 
 

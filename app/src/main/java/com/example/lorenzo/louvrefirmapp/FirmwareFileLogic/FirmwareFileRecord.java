@@ -25,7 +25,7 @@ public class FirmwareFileRecord
     byte        command;
     Int3B       address;    // 3 bytes
     byte        length;
-    UnsByte[]   data;       // unsigned byte (max 56 bytes length)
+    UnsByte[]   data;       // unsigned byte
     byte        crc;
 
 
@@ -43,8 +43,6 @@ public class FirmwareFileRecord
 
         calculateLength();
         calculateCrc();
-
-        toBytesArray();
     }
 
 

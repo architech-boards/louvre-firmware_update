@@ -330,6 +330,7 @@ public class Reader
         }
 
         Log.d("Write SRAM", "All data written to SRAM successfully");
+        textViewDebug.append("All data written to SRAM successfully\n");
     }
 
 

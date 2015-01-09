@@ -4,60 +4,48 @@
     android:layout_height="match_parent"
     tools:context="com.example.lorenzo.louvrefirmapp.Views.FirmwareUpdateFragment"
     android:orientation="vertical"
-    android:layout_margin="15sp">
+    android:layout_marginLeft="@dimen/default_margin_left"
+    android:layout_marginStart="@dimen/default_margin_left"
+    android:layout_marginRight="@dimen/default_margin_left">
 
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/header_info_firm_upload"
-        android:layout_gravity="start"
-        android:textSize="@dimen/default_info_text_size"/>
-
-    <TableLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30sp">
-
-        <TableRow >
+        android:layout_height="0dp"
+        android:layout_weight="1">
+            <TextView
+                android:id="@+id/tv_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/header_info_firm_upload"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:textStyle="bold"
+                android:textSize="@dimen/default_header_text_size"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/file_to_send_lb_text"
-                android:textSize="@dimen/default_info_text_size"
-                android:layout_gravity="center_vertical"/>
-            <!-- BUG in android inputType - must use editable = false -->
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:textSize="@dimen/default_info_text_size"
-                android:layout_weight="1"
-                android:id="@+id/et_filename"
-                android:inputType="none"
-                android:editable="false"/>
-        </TableRow>
-        <TableRow>
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/browse_button_text"
-                android:id="@+id/browse_button"
-                android:textSize="@dimen/default_info_text_size"
-                android:layout_weight="1"/>
-        </TableRow>
-    </TableLayout>
+                android:text="Firmware Version: demo"
+                android:layout_below="@+id/tv_info"
+                android:textSize="@dimen/default_header_text_size"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="20dp"/>
+    </RelativeLayout>
 
-    <ScrollView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:scrollbars="vertical"
-        android:layout_margin="5dp"
-        android:fillViewport="true">
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/tv_debug"/>
-    </ScrollView>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+            <ScrollView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="vertical"
+                android:layout_margin="5dp"
+                android:fillViewport="true">
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_debug"/>
+            </ScrollView>
+    </RelativeLayout>
 
 </LinearLayout>
