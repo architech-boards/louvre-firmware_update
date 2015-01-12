@@ -6,6 +6,7 @@ import android.util.Log;
 import com.example.lorenzo.louvrefirmapp.FirmwareFileLogic.Exc.FirmwareRecCreationExc;
 import com.example.lorenzo.louvrefirmapp.FirmwareFileLogic.Exc.HexRecordParsingExc;
 import com.example.lorenzo.louvrefirmapp.R;
+import com.example.lorenzo.louvrefirmapp.Utils.ByteArrays;
 import com.example.lorenzo.louvrefirmapp.Utils.Int3B;
 import com.example.lorenzo.louvrefirmapp.Utils.UnsByte;
 
@@ -19,7 +20,6 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
-//TODO inserire javadoc funzioni
 //TODO validare calcolo address in presenza di hex record type 04
 //TODO validare endianess "tempAddress"
 public class HexFile
@@ -164,27 +164,20 @@ public class HexFile
     }
 
 
+    /**
+     * Return firmware records map values converted into byte array
+     * @return firmware record map byte array
+     */
     public byte[] getFirmwareRecordsMapBytes()
     {
         byte[] combinedArrays = new byte[0];
         for(Map.Entry entry : firmwareRecordsMap.entrySet())
         {
             FirmwareFileRecord fr = (FirmwareFileRecord)entry.getValue();
-            combinedArrays = concat(combinedArrays, fr.toBytesArray());
+            combinedArrays = ByteArrays.concat(combinedArrays, fr.getRecordBytes());
         }
 
         return combinedArrays;
-    }
-
-    //TODO sistemare javadoc e valutare a fondo la soluzione
-    public byte[] concat(byte[] a, byte[] b)
-    {
-        int aLen = a.length;
-        int bLen = b.length;
-        byte[] c= new byte[aLen+bLen];
-        System.arraycopy(a, 0, c, 0, aLen);
-        System.arraycopy(b, 0, c, aLen, bLen);
-        return c;
     }
 
 

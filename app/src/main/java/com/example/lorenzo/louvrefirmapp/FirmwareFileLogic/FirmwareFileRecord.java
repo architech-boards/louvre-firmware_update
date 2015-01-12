@@ -23,10 +23,18 @@ public class FirmwareFileRecord
 
 
     byte        command;
-    Int3B       address;    // 3 bytes
+    Int3B       address;        // 3 bytes
     byte        length;
-    UnsByte[]   data;       // unsigned byte
+    UnsByte[]   data;           // unsigned byte
     byte        crc;
+
+    byte[]      recordBytes;    // bytes array representation of the record
+
+
+    public byte[] getRecordBytes()
+    {
+        return recordBytes;
+    }
 
 
     public FirmwareFileRecord(CommandsType command, Int3B address, short[] data)
@@ -42,22 +50,48 @@ public class FirmwareFileRecord
         }
 
         calculateLength();
-        calculateCrc();
+        calculateCrcAndRecordBytes();
     }
 
 
+    /**
+     * Calculate and save the data length of the record
+     */
     private void calculateLength()
     {
         this.length = (byte)data.length;
     }
 
 
-    private void calculateCrc()
+    /**
+     * Calculate CRC value based on the Intel .hex specification:
+     * two's complement of LSB of the sum of all decoded byte values.
+     * Update recordBytes array with calculated crc value
+     */
+    private void calculateCrcAndRecordBytes()
     {
-        //TODO inserire logica di calcolo CRC
+        this.recordBytes = toBytesArray();
+
+        int sum = 0;
+        for(int i = 0; i < recordBytes.length - 1; i++) // not consider final value (crc field)
+        {
+            sum += recordBytes[i];
+        }
+
+        // Update crc field value
+        short sumLSB = (short) (sum & 0xFF);
+        this.crc = (byte)(((~sumLSB) + 1) & 0xFF);
+
+        // Update recordBytes array with calculated crc value
+        this.recordBytes[recordBytes.length-1] = this.crc;
     }
 
-    public byte[] toBytesArray()
+
+    /**
+     * Return the record converted into a byte array
+     * @return Record to byte array
+     */
+    private byte[] toBytesArray()
     {
         byte[] bytesArray = new byte[data.length + 6];
 
