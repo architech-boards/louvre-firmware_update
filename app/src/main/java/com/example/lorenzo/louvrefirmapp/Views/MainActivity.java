@@ -7,7 +7,6 @@ import android.app.FragmentManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.nfc.FormatException;
 import android.nfc.Tag;
 import android.nfc.tech.NfcA;
 import android.os.Bundle;
@@ -23,10 +22,10 @@ import android.nfc.NfcAdapter;
 import android.widget.Toast;
 
 import com.example.lorenzo.louvrefirmapp.FirmwareFileLogic.HexFile;
-import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.BytesToWriteExceedMax;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Masks;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Reader;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.ReaderNotConnectedException;
+import com.example.lorenzo.louvrefirmapp.NFCLogic.WriteSramRunnable;
 import com.example.lorenzo.louvrefirmapp.R;
 import com.example.lorenzo.louvrefirmapp.Views.RegistersListview.RegisterItems;
 
@@ -38,7 +37,8 @@ public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
                    TagRegistersFragment.OnFragmentInteractionListener,
                    FirmwareUpdateFragment.OnTagInfoFragmentInterListener,
-                   Reader.WritingReportProgressCallbacks
+                   Reader.WritingReportProgressCallbacks,
+                   WriteSramRunnable.WritingSramCallback
 {
 
     transient Reader        ntagReader;
@@ -61,6 +61,7 @@ public class MainActivity extends Activity
     private PendingIntent   mPendingIntent;
     private IntentFilter[]  mFilters;
     private String[][]      mTechLists;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -270,69 +271,117 @@ public class MainActivity extends Activity
 
     private void writeFirmwareFileToSRAM()
     {
-        String errorNoTag =         "No tag scanned";
-        String errorConnect =       "Failed to connect to the tag";
-        String errorWrite =         "Failed to write SRAM";
-        String errorDisconnect =    "Failed to disconnect from the tag";
-        String errorAddress =       "Address block is out of range";
-        String notConnected =       "Reader not connected";
-        String dataToLong =         "Data to write is over 64 bytes";
-        String dataFormat =         "Data format exception";
+        // Start writing SRAM in a second thread
+        new Thread(new WriteSramRunnable(ntagReader,
+                                         hexFile.getFirmwareRecordsMapBytes(),
+                                         this)).start();
+    }
 
-        TextView debugView = (TextView)findViewById(R.id.tv_debug);
+    @Override
+    public void onSramBufferWrote(final int currentSession, final int sessions)
+    {
+        ProgressBar writingProgressBar = (ProgressBar)findViewById(R.id.writing_progressbar);
 
-        // Check if a tag was scanned
-        if(this.ntagReader == null)
+        // Update progress value via UI Thread
+        writingProgressBar.post(new Runnable()
         {
-            Toast.makeText(getApplicationContext(), errorNoTag, Toast.LENGTH_SHORT).show();
-            return;
-        }
+            @Override
+            public void run()
+            {
+                // Setup the progress bar and its parent layout for the first time
+                LinearLayout progressbarLayout = (LinearLayout)findViewById(R.id.progressbar_layout);
+                ProgressBar writingProgressBar = (ProgressBar)findViewById(R.id.writing_progressbar);
+                TextView tvInfo = (TextView)findViewById(R.id.tv_todo_info);
 
-        // Try to open a connection to the tag
-        if(!this.ntagReader.connect())
-        {
-            Toast.makeText(getApplicationContext(), errorConnect, Toast.LENGTH_SHORT).show();
-            return;
-        }
+                if(progressbarLayout.getVisibility() == View.GONE)
+                {
+                    // Update progressbar
+                    progressbarLayout.setVisibility(View.VISIBLE);
+                    // Update todo_info
+                    tvInfo.setText(getResources().getString(R.string.todo_info_2));
+                }
 
-        // Communicate with the tag writing to SRAM and close the communication at the end
-        try
-        {
-            ntagReader.writeSRAM(hexFile.getFirmwareRecordsMapBytes(), debugView); // Write data to SRAM
-            Toast.makeText(getApplicationContext(), "SRAM written successfully", Toast.LENGTH_LONG).show();
-        }
-        catch (IOException ioexc)
-        {
-            Toast.makeText(getApplicationContext(), errorWrite, Toast.LENGTH_LONG).show();
-            Log.e("writeFirmwareFileToSRAM", errorWrite, ioexc);
-            debugView.append(ioexc.toString());
-        }
-        catch(IndexOutOfBoundsException iobexc)
-        {
-            Toast.makeText(getApplicationContext(), errorAddress, Toast.LENGTH_LONG).show();
-            Log.e("writeFirmwareFileToSRAM", errorAddress, iobexc);
-        }
-        catch (ReaderNotConnectedException rncexc)
-        {
-            Toast.makeText(getApplicationContext(), notConnected, Toast.LENGTH_LONG).show();
-            Log.e("writeFirmwareFileToSRAM", notConnected, rncexc);
-        }
-        catch (BytesToWriteExceedMax bmax)
-        {
-            Toast.makeText(getApplicationContext(), dataToLong, Toast.LENGTH_LONG).show();
-            Log.e("writeFirmwareFileToSRAM", dataToLong, bmax);
-        }
-        catch (FormatException formexc)
-        {
-            Toast.makeText(getApplicationContext(), dataFormat, Toast.LENGTH_LONG).show();
-            Log.e("writeFirmwareFileToSRAM", dataFormat, formexc);
-        }
+                // Check for end of writing operation
+                if(currentSession >= sessions-1)
+                {
+                    progressbarLayout.setVisibility(View.GONE);
+                    writingProgressBar.setProgress(0);
+                }
+                else
+                {
+                    writingProgressBar.setMax(sessions-1);
+                    writingProgressBar.setIndeterminate(false);
+                    writingProgressBar.setProgress(currentSession);
+                    tvInfo.setText(getResources().getString(R.string.todo_info_2) +
+                            "\n\nSending block  " + currentSession + "  of  " + sessions);
+                }
+            }
+        });
+    }
 
-        if(!this.ntagReader.disconnect())
+    @Override
+    public void onSramBufferWait()
+    {
+        ProgressBar writingProgressBar = (ProgressBar)findViewById(R.id.writing_progressbar);
+
+        writingProgressBar.post(new Runnable()
         {
-            Toast.makeText(getApplicationContext(), errorDisconnect, Toast.LENGTH_LONG).show();
-            Log.e("writeFirmwareFileToSRAM", errorDisconnect);
-        }
+            @Override
+            public void run()
+            {
+                // Setup the progress bar and its parent layout for the first time
+                LinearLayout progressbarLayout = (LinearLayout)findViewById(R.id.progressbar_layout);
+                ProgressBar writingProgressBar = (ProgressBar)findViewById(R.id.writing_progressbar);
+                TextView tvInfo = (TextView)findViewById(R.id.tv_todo_info);
+
+                if(progressbarLayout.getVisibility() == View.GONE)
+                {
+                    // Update progressbar layout
+                    progressbarLayout.setVisibility(View.VISIBLE);
+                    writingProgressBar.setProgress(0);
+                    writingProgressBar.setIndeterminate(true);
+                    // Update todo_info
+                    tvInfo.setText(getResources().getString(R.string.todo_info_4));
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onWritingError(final Exception exc)
+    {
+        TextView tv = (TextView)findViewById(R.id.tv_todo_info);
+
+        tv.post(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                // Hide the progressbar layout
+                LinearLayout progressbarLayout = (LinearLayout)findViewById(R.id.progressbar_layout);
+                progressbarLayout.setVisibility(View.GONE);
+                // Update todo_info
+                TextView tv = (TextView)findViewById(R.id.tv_todo_info);
+                tv.setText(exc.getMessage() + "\n\n" + getResources().getString(R.string.todo_info_1));
+            }
+        });
+    }
+
+    @Override
+    public void onSuccessfullyWritten()
+    {
+        TextView tv = (TextView)findViewById(R.id.tv_todo_info);
+
+        tv.post(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                // Update todo_info
+                TextView tv = (TextView) findViewById(R.id.tv_todo_info);
+                tv.setText(getResources().getString(R.string.todo_info_3));
+            }
+        });
     }
 
 
@@ -385,46 +434,11 @@ public class MainActivity extends Activity
 
 
     @Override
-    public void onSramBufferWrote(final int currentSession, final int sessions)
-    {
-        ProgressBar writingProgressBar = (ProgressBar)findViewById(R.id.writing_progressbar);
-
-        // Update progress value via UI Thread
-        writingProgressBar.post(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                // Setup the progress bar and its parent layout for the first time
-                LinearLayout progressbarLayout = (LinearLayout)findViewById(R.id.progressbar_layout);
-                ProgressBar writingProgressBar = (ProgressBar)findViewById(R.id.writing_progressbar);
-
-                if(progressbarLayout.getVisibility() == View.GONE)
-                {
-                    progressbarLayout.setVisibility(View.VISIBLE);
-                    writingProgressBar.setMax(sessions-1);
-                }
-
-                // Check for end of writing operation
-                if(currentSession >= sessions-1)
-                {
-                    progressbarLayout.setVisibility(View.GONE);
-                    writingProgressBar.setProgress(0);
-                }
-                else
-                {
-                    writingProgressBar.setProgress(currentSession);
-                }
-            }
-        });
-    }
-
-
-    @Override
     public void onScanTagClick()
     {
         readTagRegisters();
     }
+
 
     @Override
     public void onTestProgressbar()
@@ -435,6 +449,17 @@ public class MainActivity extends Activity
             @Override
             public void run()
             {
+                // Test waiting
+                onSramBufferWait();
+                try
+                {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+
+                // Test progress
                 int maxSession = 211;
                 for(int i = 0; i < maxSession; i++)
                 {
@@ -447,6 +472,8 @@ public class MainActivity extends Activity
                         e.printStackTrace();
                     }
                 }
+
+                onSuccessfullyWritten();
             }
         }).start();
     }
@@ -457,45 +484,5 @@ public class MainActivity extends Activity
 
     }
 
-
-//    /**
-//     * A placeholder fragment containing a simple view.
-//     */
-//    public static class PlaceholderFragment extends Fragment {
-//        /**
-//         * The fragment argument representing the section number for this
-//         * fragment.
-//         */
-//        private static final String ARG_SECTION_NUMBER = "section_number";
-//
-//        /**
-//         * Returns a new instance of this fragment for the given section
-//         * number.
-//         */
-//        public static PlaceholderFragment newInstance(int sectionNumber) {
-//            PlaceholderFragment fragment = new PlaceholderFragment();
-//            Bundle args = new Bundle();
-//            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-//            fragment.setArguments(args);
-//            return fragment;
-//        }
-//
-//        public PlaceholderFragment() {
-//        }
-//
-//        @Override
-//        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-//                                 Bundle savedInstanceState) {
-//            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-//            return rootView;
-//        }
-//
-//        @Override
-//        public void onAttach(Activity activity) {
-//            super.onAttach(activity);
-//            ((MainActivity) activity).onSectionAttached(
-//                    getArguments().getInt(ARG_SECTION_NUMBER));
-//        }
-//    }
 
 }

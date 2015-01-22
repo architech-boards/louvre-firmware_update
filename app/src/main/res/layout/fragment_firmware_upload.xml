@@ -6,7 +6,8 @@
     android:orientation="vertical"
     android:layout_marginLeft="@dimen/default_margin_left"
     android:layout_marginStart="@dimen/default_margin_left"
-    android:layout_marginRight="@dimen/default_margin_left">
+    android:layout_marginRight="@dimen/default_margin_right"
+    android:layout_marginEnd="@dimen/default_margin_right">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -14,7 +15,7 @@
         android:layout_weight="1">
             <TextView
                 android:id="@+id/tv_info"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/header_info_firm_upload"
                 android:layout_centerInParent="true"
@@ -53,31 +54,27 @@
                 android:orientation="vertical"
                 android:layout_centerHorizontal="true"
                 android:visibility="gone">
+                    <ProgressBar
+                        android:id="@+id/writing_progressbar"
+                        android:layout_width="match_parent"
+                        android:layout_height="13dp"
+                        style="@android:style/Widget.ProgressBar.Horizontal"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/default_info_text_size"
                         android:text="@string/progress_bar_label"
                         android:layout_gravity="center"/>
-                    <ProgressBar
-                        android:id="@+id/writing_progressbar"
-                        android:layout_width="match_parent"
-                        android:layout_height="12dp"
-                        style="@android:style/Widget.ProgressBar.Horizontal"
-                        android:layout_margin="@dimen/activity_horizontal_margin"/>
             </LinearLayout>
-            <ScrollView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:scrollbars="vertical"
-                android:layout_margin="5dp"
-                android:fillViewport="true"
-                android:layout_below="@id/progressbar_layout">
                 <TextView
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/tv_debug"/>
-            </ScrollView>
+                    android:id="@+id/tv_todo_info"
+                    android:layout_centerInParent="true"
+                    android:gravity="center"
+                    android:text="@string/todo_info_1"
+                    android:textColor="@color/Gray"
+                    android:textSize="@dimen/default_info_text_size"/>
     </RelativeLayout>
 
 </LinearLayout>

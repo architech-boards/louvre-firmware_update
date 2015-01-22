@@ -24,7 +24,9 @@ import java.util.TreeMap;
 //TODO validare endianess "tempAddress"
 public class HexFile
 {
-    private static final int RECORD_DATA_COUNT = 58; // How many record to include in firmwareRecord data field
+    private static final int RECORD_DATA_COUNT = 58;         // How many record to include in firmwareRecord data field
+    private static final int FILE_ADDRESS_CHECKSUM = 0x2000; // Address of checksum inside flash simul array
+    private static final int FILE_ADDRESS_LENGTH = 0x2004;   // Address of length inside flash simul array
 
     Resources                               activityResources;    // To handle file IO
     ArrayList<HexFileRecord>                hexFileRecordsList;
@@ -120,6 +122,11 @@ public class HexFile
                 }
             }
 
+            //TODO validare calcolo length e crc
+            // Insert file checksum and length
+            //flashSimul[FILE_ADDRESS_CHECKSUM] = calculateChecksum(flashSimul);
+            //flashSimul[FILE_ADDRESS_LENGTH] = calculateFileLength(flashSimul);
+
             // Create firmware record from the flashSimul array
             for(int i = 0; i < flashSimul.length; )
             {
@@ -161,6 +168,47 @@ public class HexFile
         {
             throw new FirmwareRecCreationExc("Error creating firmware record", exc);
         }
+    }
+
+
+    /**
+     * Calculate file Length
+     * @param flashSimul Array that simulate device flash memory on which to calculate
+     * @return File length
+     */
+    private short calculateFileLength(short[] flashSimul)
+    {
+        int index;
+
+        // Take address of last byte different from 0xFF
+        for(index = flashSimul.length-1; index > 0; index--)
+        {
+            if(flashSimul[index] != 0xFF)
+            {
+                break;
+            }
+        }
+
+        return (short)(index - FILE_ADDRESS_LENGTH);
+    }
+
+
+    /**
+     * Calculate file checksum according to intel .hex document
+     * @param flashSimul Array that simulate device flash memory on which to calculate
+     * @return File crc
+     */
+    private short calculateChecksum(short[] flashSimul)
+    {
+        long dataSum = 0;
+
+        for(int i = 0; i < flashSimul.length; i++)
+        {
+            dataSum += flashSimul[i];
+        }
+
+        short dataSumLSB = (short) (dataSum & 0xFF);
+        return (short)(((~dataSumLSB) + 1) & 0xFF);
     }
 
 

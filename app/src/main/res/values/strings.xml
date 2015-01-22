@@ -8,19 +8,25 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
+    <string name="todo_info_registers">Place your phone on the TAG to retrieve registers info</string>
     <string name="action_test_file_browser">Test file from browse</string>
     <string name="action_test_file_raw">Test file from raw</string>
     <string name="action_test_progressbar">Test progressbar</string>
     <string name="button_scan_tag_text"><b>Scan NTAG</b></string>
     <string name="lb_tag_info">Scanned TAG info</string>
     <string name="lb_tag_info_text"> </string>
-    <string name="header_info_firm_upload">Place the device on the TAG to start transferring</string>
-    <string name="header_info_tag_info">Place your phone on the TAG to retrieve registers info</string>
+    <string name="header_info_firm_upload">The application will send to the Louvre board the following
+                                           firmware release via NFC</string>
+    <string name="todo_info_1">Place the device on the TAG to start transceiving</string>
+    <string name="todo_info_2">Transceiving in progress … </string>
+    <string name="todo_info_3">[ Firmware transferred successfully ]\n\n
+                               Place the device on the TAG to start transceiving</string>
+    <string name="todo_info_4">Waiting for board initialization … </string>
     <string name="file_to_send_lb_text">File to send</string>
     <string name="browse_button_text">Browse</string>
     <string name="listview_header_1">REGISTER NAME</string>
     <string name="listview_header_2">REGISTER VALUE</string>
-    <string name="progress_bar_label">Writing Progress</string>
-    <string name="firmware_version_text">Firmware Version: </string>
+    <string name="progress_bar_label">Upload Progress</string>
+    <string name="firmware_version_text">Rel. id: </string>
 
 </resources>

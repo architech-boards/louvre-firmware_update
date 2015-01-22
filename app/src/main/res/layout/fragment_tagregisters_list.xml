@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/header_info_tag_info"
+        android:text="@string/todo_info_registers"
         android:layout_gravity="start"
         android:textSize="@dimen/default_info_text_size"/>
 

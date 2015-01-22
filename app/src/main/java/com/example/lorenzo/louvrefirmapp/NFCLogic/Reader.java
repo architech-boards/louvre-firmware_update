@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.BytesToWriteExceedMax;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.ReaderNotConnectedException;
+import com.example.lorenzo.louvrefirmapp.Utils.ByteArrays;
 
 import java.io.IOException;
 import java.io.WriteAbortedException;
@@ -22,6 +23,7 @@ public class Reader
     public static interface WritingReportProgressCallbacks
     {
         void onSramBufferWrote(int currentSession, int sessions);
+        void onSramBufferWait();
     }
 
     WritingReportProgressCallbacks writingReportProgressCallbacks;
@@ -240,30 +242,27 @@ public class Reader
      * @throws IOException
      * @throws android.nfc.FormatException
      */
-    //TODO scrittura in thread separato (vedi MainActivity.onTestProgressbar)
-    public void writeSRAM(byte[] bytes, TextView textViewDebug) throws IOException, FormatException, BytesToWriteExceedMax,
+    public void writeSRAM(byte[] bytes) throws IOException, FormatException, BytesToWriteExceedMax,
                                                ReaderNotConnectedException
     {
         //TODO timeout to avoid indefinite while blocking
         byte[]      bytesBlock;
         int         sessions;
 
+        // Alert that the writing operation is waiting for the board
+        writingReportProgressCallbacks.onSramBufferWait();
+
         // Wait for PTHRU_ON_OFF
-        textViewDebug.setText("");
-        textViewDebug.append("Start waiting for PTHRU_ON_OFF set to 1 ...\n");
         Log.d("Write SRAM", "Start waiting for PTHRU_ON_OFF set to 1 ...");
         while(get_NC_REG_sessField(Masks.NC_REG_Sess.PTHRU_ON_OFF) == 0)
         { }
         Log.d("Write SRAM", "Found PTHRU_ON_OFF set to 1 ...");
-        textViewDebug.append("Found PTHRU_ON_OFF set to 1 ...\n");
 
         // Wait for I2C_LOCKED
         Log.d("Write SRAM", "Start waiting for I2C_LOCKED set to 0 ...");
-        textViewDebug.append("Start waiting for I2C_LOCKED set to 0 ...\n");
         while(get_NS_REG_sessField(Masks.NS_REG_Sess.I2C_LOCKED) == 1)
         { }
         Log.d("Write SRAM", "Found I2C_LOCKED set to 0 ...");
-        textViewDebug.append("Found I2C_LOCKED set to 0 ...\n");
 
         // Handle multiple writing session
         sessions =  (int)Math.ceil(bytes.length / SRAM_BUFFER_SIZE);
@@ -302,51 +301,76 @@ public class Reader
                 // Select sector 1 where SRAM buffer is mapped
                 selectSector(Addresses.Sector.SECTOR_1);
                 Log.d("Write SRAM", "Memory sector 1 selected");
-                textViewDebug.append("Memory sector 1 selected\n");
 
                 byte blockAddress = (byte)(Addresses.Registers.SRAM_BEGIN.getValue() + i);
                 Log.d("Write SRAM", "[Session " + (currentSession + 1) + " of " + sessions +
                         "] writing 4 bytes to address " + blockAddress  + "...");
-                textViewDebug.append("[Session " + (currentSession + 1) + " of " + sessions +
-                        "] writing 4 bytes to address " + blockAddress  + "...\n");
+
                 write(pageBuffer, blockAddress);
                 Log.d("Write SRAM", "Bytes written");
-                textViewDebug.append("Bytes written\n");
             }
 
             // Wait for I2C to read the data on SRAM buffer
             Log.d("Write SRAM", "Start waiting for RF_LOCKED set to 1 ...");
-            textViewDebug.append("Start waiting for RF_LOCKED set to 1 ...\n");
             while(get_NS_REG_sessField(Masks.NS_REG_Sess.RF_LOCKED) == 0)
             { }
             Log.d("Write SRAM", "[Session " + (currentSession + 1) + " of " + sessions +
                     "] SRAM buffer written successfully");
-            textViewDebug.append("[Session " + (currentSession + 1) + " of " + sessions +
-                    "] SRAM buffer written successfully\n");
 
+            // Alert about the progress in the writing operation
             writingReportProgressCallbacks.onSramBufferWrote(currentSession, sessions);
-
-            // Print all BIT interested in the communication
-            /*
-            textViewDebug.append("\n");
-            textViewDebug.append("I2C_LOCKED= " + Byte.toString(get_NS_REG_sessField(Masks.NS_REG_Sess.I2C_LOCKED)) + "\n");
-            textViewDebug.append("RF_LOCKED= " + Byte.toString(get_NS_REG_sessField(Masks.NS_REG_Sess.RF_LOCKED)) + "\n");
-            textViewDebug.append("SRAM_I2C_LOCKED= " + Byte.toString(get_NS_REG_sessField(Masks.NS_REG_Sess.SRAM_I2C_READY)) + "\n");
-            textViewDebug.append("SRAM_RF_READY= " + Byte.toString(get_NS_REG_sessField(Masks.NS_REG_Sess.SRAM_RF_READY)) + "\n");
-            textViewDebug.append("EEPROM_WR_ERR= " + Byte.toString(get_NS_REG_sessField(Masks.NS_REG_Sess.EEPROM_WR_ERR)) + "\n");
-            textViewDebug.append("EEPROM_WR_BUSY= " + Byte.toString(get_NS_REG_sessField(Masks.NS_REG_Sess.EEPROM_WR_BUSY)) + "\n");
-            textViewDebug.append("RF_FIELD_PRESENT= " + Byte.toString(get_NS_REG_sessField(Masks.NS_REG_Sess.RF_FIELD_PRESENT)) + "\n");
-            textViewDebug.append("I2C_RST_ON_OFF= " + Byte.toString(get_NC_REG_sessField(Masks.NC_REG_Sess.I2C_RST_ON_OFF)) + "\n");
-            textViewDebug.append("PTHRU_DIR= " + Byte.toString(get_NC_REG_sessField(Masks.NC_REG_Sess.PTHRU_ON_OFF)) + "\n");
-            textViewDebug.append("FD_ON= " + Byte.toString(get_NC_REG_sessField(Masks.NC_REG_Sess.FD_ON)) + "\n");
-            textViewDebug.append("FD_OFF=" + Byte.toString(get_NC_REG_sessField(Masks.NC_REG_Sess.FD_OFF)) + "\n");
-            textViewDebug.append("SRAM_MIRROR_ON_OFF= " + Byte.toString(get_NC_REG_sessField(Masks.NC_REG_Sess.SRAM_MIRROR_ON_OFF)) + "\n");
-            textViewDebug.append("PTHRU_DIR= " + Byte.toString(get_NC_REG_sessField(Masks.NC_REG_Sess.PTHRU_DIR)) + "\n");
-            */
         }
 
         Log.d("Write SRAM", "All data written to SRAM successfully");
-        textViewDebug.append("All data written to SRAM successfully\n");
+    }
+
+
+    //TODO test corretto funzionamento con board
+    /**
+     * Read the SRAM buffer as many times as specified by block param
+     * @param blocks Specify how many times to read the buffer
+     * @return bytes read from the buffer
+     * @throws IOException
+     * @throws ReaderNotConnectedException
+     */
+    public byte[] readSRAM(int blocks) throws IOException, ReaderNotConnectedException
+    {
+        byte[] fullAnswere = new byte[0];
+
+        for(int i = 0; i < blocks; i++)
+        {
+            // Wait I2C to write last SRAM page
+            while (get_NS_REG_sessField(Masks.NS_REG_Sess.SRAM_RF_READY) == 0)
+            { }
+
+            // Read all the 64 SRAM buffer
+            selectSector(Addresses.Sector.SECTOR_1);
+            fullAnswere = ByteArrays.concat(fullAnswere, fast_read((byte)0xF0, (byte)0xFF));
+        }
+
+        return fullAnswere;
+    }
+
+
+    /**
+     * Read from startAddr to endAddr
+     * @param startAddr Address from where to start reading
+     * @param endAddr Address where to finish reading
+     * @return Bytes read
+     * @throws IOException
+     */
+    public byte[] fast_read(byte startAddr, byte endAddr) throws IOException
+    {
+        // Update answer with no answer reply
+        answer = new byte[0];
+
+        command = new byte[3];
+        command[0] = (byte) 0x3A;
+        command[1] = startAddr;
+        command[2] = endAddr;
+
+        answer = nfcA.transceive(command);
+        return answer;
     }
 
 
