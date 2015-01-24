@@ -3,6 +3,8 @@ package com.example.lorenzo.louvrefirmapp.NFCLogic;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.ReaderDisconnectionException;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Exc.ReaderNotConnectedException;
 
+import java.util.List;
+
 public class WriteSramRunnable implements Runnable
 {
     public static interface WritingSramCallback
@@ -12,10 +14,10 @@ public class WriteSramRunnable implements Runnable
     }
 
     Reader                      reader;
-    byte[]                      bytesToWrite;
+    List<byte[]>                bytesToWrite;
     WritingSramCallback         writingSramCallback;
 
-    public WriteSramRunnable(Reader reader, byte[] bytesToWrite, WritingSramCallback callback)
+    public WriteSramRunnable(Reader reader, List<byte[]> bytesToWrite, WritingSramCallback callback)
     {
         this.reader = reader;
         this.bytesToWrite = bytesToWrite;
@@ -41,7 +43,7 @@ public class WriteSramRunnable implements Runnable
                 writingSramCallback.onWritingError(new ReaderNotConnectedException());
             }
 
-            reader.writeSRAM(this.bytesToWrite);
+            reader.writeSRAMList(this.bytesToWrite);
             writingSramCallback.onSuccessfullyWritten();
 
             if(!reader.disconnect())

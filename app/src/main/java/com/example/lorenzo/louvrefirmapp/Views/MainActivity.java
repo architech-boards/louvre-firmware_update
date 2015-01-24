@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.nfc.NfcAdapter;
 import android.widget.Toast;
 
+import com.example.lorenzo.louvrefirmapp.FirmwareFileLogic.FirmwareFileRecord;
 import com.example.lorenzo.louvrefirmapp.FirmwareFileLogic.HexFile;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Masks;
 import com.example.lorenzo.louvrefirmapp.NFCLogic.Reader;
@@ -30,6 +31,9 @@ import com.example.lorenzo.louvrefirmapp.R;
 import com.example.lorenzo.louvrefirmapp.Views.RegistersListview.RegisterItems;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 //TODO sistemare codice pulendo commmenti e eliminando riferimenti non utilizzati
 
@@ -272,8 +276,14 @@ public class MainActivity extends Activity
     private void writeFirmwareFileToSRAM()
     {
         // Start writing SRAM in a second thread
+        ArrayList<byte[]> bytesList = new ArrayList<>();
+        for(Map.Entry entry : hexFile.getFirmwareRecordsMap().entrySet())
+        {
+            FirmwareFileRecord fr = (FirmwareFileRecord)entry.getValue();
+            bytesList.add(fr.getRecordBytes());
+        }
         new Thread(new WriteSramRunnable(ntagReader,
-                                         hexFile.getFirmwareRecordsMapBytes(),
+                                         bytesList,
                                          this)).start();
     }
 
@@ -302,15 +312,15 @@ public class MainActivity extends Activity
                 }
 
                 // Check for end of writing operation
-                if(currentSession >= sessions-1)
+                if(currentSession >= sessions)
                 {
                     progressbarLayout.setVisibility(View.GONE);
                     writingProgressBar.setProgress(0);
                 }
                 else
                 {
-                    writingProgressBar.setMax(sessions-1);
                     writingProgressBar.setIndeterminate(false);
+                    writingProgressBar.setMax(sessions-1);
                     writingProgressBar.setProgress(currentSession);
                     tvInfo.setText(getResources().getString(R.string.todo_info_2) +
                             "\n\nSending block  " + currentSession + "  of  " + sessions);
@@ -334,15 +344,11 @@ public class MainActivity extends Activity
                 ProgressBar writingProgressBar = (ProgressBar)findViewById(R.id.writing_progressbar);
                 TextView tvInfo = (TextView)findViewById(R.id.tv_todo_info);
 
-                if(progressbarLayout.getVisibility() == View.GONE)
-                {
-                    // Update progressbar layout
-                    progressbarLayout.setVisibility(View.VISIBLE);
-                    writingProgressBar.setProgress(0);
-                    writingProgressBar.setIndeterminate(true);
-                    // Update todo_info
-                    tvInfo.setText(getResources().getString(R.string.todo_info_4));
-                }
+                // Update progressbar layout
+                writingProgressBar.setIndeterminate(true);
+                progressbarLayout.setVisibility(View.VISIBLE);
+                // Update todo_info
+                tvInfo.setText(getResources().getString(R.string.todo_info_4));
             }
         });
     }

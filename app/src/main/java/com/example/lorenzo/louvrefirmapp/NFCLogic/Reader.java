@@ -13,6 +13,7 @@ import com.example.lorenzo.louvrefirmapp.Utils.ByteArrays;
 import java.io.IOException;
 import java.io.WriteAbortedException;
 import java.util.Arrays;
+import java.util.List;
 
 
 public class Reader
@@ -265,7 +266,7 @@ public class Reader
         Log.d("Write SRAM", "Found I2C_LOCKED set to 0 ...");
 
         // Handle multiple writing session
-        sessions =  (int)Math.ceil(bytes.length / SRAM_BUFFER_SIZE);
+        sessions =  (int)Math.ceil((double)bytes.length / (double)SRAM_BUFFER_SIZE);
         for(int currentSession = 0; currentSession < sessions; currentSession ++)
         {
             int startBlock = currentSession * SRAM_BUFFER_SIZE;
@@ -319,6 +320,77 @@ public class Reader
 
             // Alert about the progress in the writing operation
             writingReportProgressCallbacks.onSramBufferWrote(currentSession, sessions);
+        }
+
+        Log.d("Write SRAM", "All data written to SRAM successfully");
+    }
+
+
+    public void writeSRAMList(List<byte[]> bytesList) throws IOException, FormatException, BytesToWriteExceedMax,
+            ReaderNotConnectedException
+    {
+        //TODO timeout to avoid indefinite while blocking
+        byte[]      bytesBlock;
+        int         sessions;
+
+        // Alert that the writing operation is waiting for the board
+        writingReportProgressCallbacks.onSramBufferWait();
+
+        // Wait for PTHRU_ON_OFF
+        Log.d("Write SRAM", "Start waiting for PTHRU_ON_OFF set to 1 ...");
+        while(get_NC_REG_sessField(Masks.NC_REG_Sess.PTHRU_ON_OFF) == 0)
+        { }
+        Log.d("Write SRAM", "Found PTHRU_ON_OFF set to 1 ...");
+
+        // Wait for I2C_LOCKED
+        Log.d("Write SRAM", "Start waiting for I2C_LOCKED set to 0 ...");
+        while(get_NS_REG_sessField(Masks.NS_REG_Sess.I2C_LOCKED) == 1)
+        { }
+        Log.d("Write SRAM", "Found I2C_LOCKED set to 0 ...");
+
+        // Handle multiple writing session
+        for(byte[] bytes : bytesList)
+        {
+            // Divide the bytes to write into 4 blocks of 4 bytes each because the write function can
+            // handle only 4 bytes at the time
+            byte[] pageBuffer = new byte[4];
+            int bytesToWriteIndex = 0;
+            for (int i = 0; i < 16; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    if (bytesToWriteIndex < bytes.length)
+                    {
+                        pageBuffer[j] = bytes[bytesToWriteIndex];
+                        bytesToWriteIndex++;
+                    }
+                    else
+                    {
+                        pageBuffer[j] = (byte) 0x00;
+                    }
+                }
+
+                // Select sector 1 where SRAM buffer is mapped
+                selectSector(Addresses.Sector.SECTOR_1);
+                Log.d("Write SRAM", "Memory sector 1 selected");
+
+                byte blockAddress = (byte)(Addresses.Registers.SRAM_BEGIN.getValue() + i);
+                Log.d("Write SRAM", "[Session " + (bytesList.indexOf(bytes) + 1) + " of " + bytesList.size() +
+                        "] writing 4 bytes to address " + blockAddress  + "...");
+
+                write(pageBuffer, blockAddress);
+                Log.d("Write SRAM", "Bytes written");
+            }
+
+            // Wait for I2C to read the data on SRAM buffer
+            Log.d("Write SRAM", "Start waiting for RF_LOCKED set to 1 ...");
+            while(get_NS_REG_sessField(Masks.NS_REG_Sess.RF_LOCKED) == 0)
+            { }
+            Log.d("Write SRAM", "[Session " + (bytesList.indexOf(bytes) + 1) + " of " + bytesList.size() +
+                    "] SRAM buffer written successfully");
+
+            // Alert about the progress in the writing operation
+            writingReportProgressCallbacks.onSramBufferWrote((bytesList.indexOf(bytes) + 1), bytesList.size());
         }
 
         Log.d("Write SRAM", "All data written to SRAM successfully");

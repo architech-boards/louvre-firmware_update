@@ -54,6 +54,13 @@ public class FirmwareFileRecord
     }
 
 
+    public void setAsLastRecord()
+    {
+        this.command = CommandsType.LAST_BOOTLOADER_RECORD.getValue();
+        calculateCrcAndRecordBytes();
+    }
+
+
     /**
      * Calculate and save the data length of the record
      */

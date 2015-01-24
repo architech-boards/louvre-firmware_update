@@ -25,12 +25,14 @@ import java.util.TreeMap;
 public class HexFile
 {
     private static final int RECORD_DATA_COUNT = 58;         // How many record to include in firmwareRecord data field
-    private static final int FILE_ADDRESS_CHECKSUM = 0x2000; // Address of checksum inside flash simul array
-    private static final int FILE_ADDRESS_LENGTH = 0x2004;   // Address of length inside flash simul array
+    private static final int FILE_ADDRESS_CHECKSUM = 0x3000; // Address of checksum inside flash simul array
+    private static final int FILE_ADDRESS_LENGTH = 0x3004;   // Address of length inside flash simul array
 
     Resources                               activityResources;    // To handle file IO
     ArrayList<HexFileRecord>                hexFileRecordsList;
     TreeMap<Integer, FirmwareFileRecord>    firmwareRecordsMap;
+
+    long lengthLong = 0;
 
 
     public TreeMap<Integer, FirmwareFileRecord> getFirmwareRecordsMap()
@@ -106,7 +108,7 @@ public class HexFile
     public void createFirmwareRecordsMap() throws FirmwareRecCreationExc
     {
         // Initialize 1 MB array to 0xFF
-        short[] flashSimul = new short[1000000];
+        short[] flashSimul = new short[1048576];
         Arrays.fill(flashSimul, (short)0xFF);
 
         try
@@ -124,8 +126,14 @@ public class HexFile
 
             //TODO validare calcolo length e crc
             // Insert file checksum and length
-            //flashSimul[FILE_ADDRESS_CHECKSUM] = calculateChecksum(flashSimul);
-            //flashSimul[FILE_ADDRESS_LENGTH] = calculateFileLength(flashSimul);
+            byte[] length = calculateFileLength(flashSimul);
+            flashSimul[FILE_ADDRESS_LENGTH] = length[3];
+            flashSimul[FILE_ADDRESS_LENGTH + 1] = length[2];
+            flashSimul[FILE_ADDRESS_LENGTH + 2] = length[1];
+            flashSimul[FILE_ADDRESS_LENGTH + 3] = length[0];
+
+            flashSimul[FILE_ADDRESS_CHECKSUM] = calculateChecksum(flashSimul);
+            short cksum = flashSimul[FILE_ADDRESS_CHECKSUM];
 
             // Create firmware record from the flashSimul array
             for(int i = 0; i < flashSimul.length; )
@@ -161,8 +169,7 @@ public class HexFile
             }
 
             // Set last record type of the last record in the map
-            firmwareRecordsMap.lastEntry().getValue().command =
-                    FirmwareFileRecord.CommandsType.LAST_BOOTLOADER_RECORD.getValue();
+            firmwareRecordsMap.lastEntry().getValue().setAsLastRecord();
         }
         catch (Exception exc)
         {
@@ -176,20 +183,28 @@ public class HexFile
      * @param flashSimul Array that simulate device flash memory on which to calculate
      * @return File length
      */
-    private short calculateFileLength(short[] flashSimul)
+    private byte[] calculateFileLength(short[] flashSimul)
     {
         int index;
 
         // Take address of last byte different from 0xFF
-        for(index = flashSimul.length-1; index > 0; index--)
+        for(index = flashSimul.length-1; index >= 0; index--)
         {
-            if(flashSimul[index] != 0xFF)
+            if(flashSimul[index] != (short)0xFF)
             {
                 break;
             }
         }
 
-        return (short)(index - FILE_ADDRESS_LENGTH);
+        lengthLong = index - FILE_ADDRESS_LENGTH + 1;
+        byte[] bytes = new byte[4];
+
+        bytes[0] = (byte) ((lengthLong >> 24) & 0XFF);   // 4th byte
+        bytes[1] = (byte) ((lengthLong >> 16) & 0XFF);   // 3th byte
+        bytes[2] = (byte) ((lengthLong >> 8) & 0XFF);    // 2th byte
+        bytes[3] = (byte) (lengthLong & 0XFF);           // 1th byte
+
+        return  bytes;
     }
 
 
@@ -202,12 +217,16 @@ public class HexFile
     {
         long dataSum = 0;
 
-        for(int i = 0; i < flashSimul.length; i++)
+        for(int i = 0x3008; i < 0x3008+lengthLong -4; i++)
         {
+            if(i== 32264)
+            {
+                int breakp = 1;
+            }
             dataSum += flashSimul[i];
         }
 
-        short dataSumLSB = (short) (dataSum & 0xFF);
+        long dataSumLSB = dataSum & 0xFF;
         return (short)(((~dataSumLSB) + 1) & 0xFF);
     }
 
@@ -264,6 +283,10 @@ public class HexFile
             {
                 endIndex = i + 1;
                 break;
+            }
+            else
+            {
+                endIndex --;
             }
         }
 
