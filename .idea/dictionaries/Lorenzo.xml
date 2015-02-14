@@ -3,6 +3,7 @@
     <words>
       <w>bootloader</w>
       <w>eeprom</w>
+      <w>hexdata</w>
       <w>ndef</w>
       <w>ntag</w>
       <w>ntech</w>

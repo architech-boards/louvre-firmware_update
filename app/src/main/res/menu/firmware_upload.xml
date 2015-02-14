@@ -4,15 +4,18 @@
     <item android:id="@+id/test_file_browser"
           android:title="@string/action_test_file_browser"
           android:orderInCategory="100"
-          android:showAsAction="never" />
+          android:showAsAction="never"
+    android:visible="false"/>
 
     <item android:id="@+id/test_file_raw"
           android:title="@string/action_test_file_raw"
           android:orderInCategory="100"
-          android:showAsAction="never" />
+          android:showAsAction="never"
+    android:visible="false"/>
 
     <item android:id="@+id/test_progressbar"
           android:title="@string/action_test_progressbar"
           android:orderInCategory="100"
-          android:showAsAction="never" />
+          android:showAsAction="never"
+    android:visible="false"/>
 </menu>

@@ -6,7 +6,7 @@ android {
     buildToolsVersion '21.0.1'
 
     defaultConfig {
-        applicationId "com.example.lorenzo.louvrefirmapp"
+        applicationId "it.rsr.lstradella.louvrefirmapp"
         minSdkVersion 15
         targetSdkVersion 21
         versionCode 1

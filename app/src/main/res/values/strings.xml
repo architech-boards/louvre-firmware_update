@@ -19,7 +19,7 @@
                                            firmware release via NFC</string>
     <string name="todo_info_1">Place the device on the TAG to start transceiving</string>
     <string name="todo_info_2">Transceiving in progress … </string>
-    <string name="todo_info_3">[ Firmware transferred successfully ]\n\n
+    <string name="todo_info_3">Firmware transferred successfully\n\n
                                Place the device on the TAG to start transceiving</string>
     <string name="todo_info_4">Waiting for board initialization … </string>
     <string name="file_to_send_lb_text">File to send</string>
