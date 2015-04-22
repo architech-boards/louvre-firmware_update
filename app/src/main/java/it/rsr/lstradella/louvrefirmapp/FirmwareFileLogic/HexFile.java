@@ -32,9 +32,9 @@ public class HexFile
     public static final String VERSION_ARG = "hexVersionArg";
 
     private static final int RECORD_DATA_COUNT = 58;         // How many record to include in firmwareRecord data field
-    private static final int FILE_ADDRESS_CHECKSUM = 0x2000; // Address of checksum inside flash simul array
-    private static final int FILE_ADDRESS_LENGTH = 0x2004;   // Address of length inside flash simul array
-    private static final int FILE_ADDRESS_HEXDATA= 0x200C;   // Starting address of hex data inside flash simul array
+    private static final int FILE_ADDRESS_CHECKSUM = 0x2000; // Address of checksum inside flash simul array 3000
+    private static final int FILE_ADDRESS_LENGTH = 0x2004;   // Address of length inside flash simul array 3004
+    private static final int FILE_ADDRESS_HEXDATA= 0x200C;   // Starting address of hex data inside flash simul array 300C
 
     Resources                               activityResources;    // To handle file IO
     ArrayList<HexFileRecord>                hexFileRecordsList;
