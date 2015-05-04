@@ -3,11 +3,13 @@ package it.rsr.lstradella.louvrefirmapp.Views;
 import android.app.Activity;
 
 import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.nfc.NfcManager;
 import android.nfc.Tag;
 import android.nfc.tech.NfcA;
 import android.os.Bundle;
@@ -65,6 +67,8 @@ public class MainActivity extends Activity
     private IntentFilter[]  mFilters;
     private String[][]      mTechLists;
 
+    private boolean         isNfcEnabled;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -81,13 +85,16 @@ public class MainActivity extends Activity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        // Set up foreground dispatcher to use to handle scanned tag with app in foreground
-        mAdapter = NfcAdapter.getDefaultAdapter(this);
-        mPendingIntent = PendingIntent.getActivity(
-                this, 0, new Intent(this, ((Object) this).getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-        IntentFilter ntech = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
-        mFilters = new IntentFilter[] {ntech};
-        mTechLists = new String[][] { new String[] { NfcA.class.getName() } };
+        if(isNfcEnabled = isNfcEnabled())
+        {
+            // Set up foreground dispatcher to use to handle scanned tag with app in foreground
+            mAdapter = NfcAdapter.getDefaultAdapter(this);
+            mPendingIntent = PendingIntent.getActivity(
+                    this, 0, new Intent(this, ((Object) this).getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+            IntentFilter ntech = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
+            mFilters = new IntentFilter[]{ntech};
+            mTechLists = new String[][]{new String[]{NfcA.class.getName()}};
+        }
     }
 
     @Override
@@ -95,14 +102,17 @@ public class MainActivity extends Activity
     {
         super.onResume();
 
-        this.mAdapter.enableForegroundDispatch(this, mPendingIntent, mFilters, mTechLists);
-
-        // Check if the application is started because a NTAG was scanned
-        if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(getIntent().getAction()))
+        if(isNfcEnabled)
         {
-            Tag discoveredTag = getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
+            mAdapter.enableForegroundDispatch(this, mPendingIntent, mFilters, mTechLists);
 
-            this.ntagReader = new Reader(discoveredTag, this);
+            // Check if the application is started because a NTAG was scanned
+            if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(getIntent().getAction()))
+            {
+                Tag discoveredTag = getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
+
+                this.ntagReader = new Reader(discoveredTag, this);
+            }
         }
     }
 
@@ -111,6 +121,11 @@ public class MainActivity extends Activity
     protected void onPause()
     {
         super.onPause();
+
+        if(isNfcEnabled)
+        {
+            mAdapter.disableForegroundDispatch(this);
+        }
 
         // Let the display turn off in case previously blocked
         Screen.releaseScreenOn();
@@ -397,6 +412,28 @@ public class MainActivity extends Activity
         });
     }
 
+
+    private boolean isNfcEnabled()
+    {
+        NfcManager manager = (NfcManager) getSystemService(Context.NFC_SERVICE);
+        NfcAdapter adapter = manager.getDefaultAdapter();
+        if (adapter == null || !adapter.isEnabled()) {
+            // 1. Instantiate an AlertDialog.Builder with its constructor
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            // 2. Chain together various setter methods to set the dialog characteristics
+            builder.setMessage("NFC not present or not enabled")
+                    .setTitle("NFC Warning");
+
+            // 3. Get the AlertDialog from create()
+            AlertDialog dialog = builder.create();
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.show();
+            return false;
+        }
+
+        return true;
+    }
 
 
     public void onSectionAttached(int number) {
