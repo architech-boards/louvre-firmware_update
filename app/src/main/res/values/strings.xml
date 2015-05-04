@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">LouvreFirmApp</string>
+    <string name="app_name">LouvreFirmUpdate</string>
     <string name="title_get_tag_info">Retrieve TAG Info</string>
     <string name="title_upload_firmware">Upload Firmware</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
