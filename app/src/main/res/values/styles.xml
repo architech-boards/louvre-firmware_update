@@ -4,6 +4,7 @@
     <style name="AppTheme" parent="android:Theme.Holo.Light.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="android:colorBackground">@color/White</item>
+        <item name="android:windowBackground">@color/White</item>
     </style>
 
 </resources>

@@ -9,5 +9,6 @@
         <!--   theme UI controls like checkboxes and text fields -->
 <!--        <item name="android:colorAccent">@color/accent</item> -->
         <item name="android:colorBackground">@color/White</item>
+        <item name="android:windowBackground">@color/White</item>
     </style>
 </resources>
